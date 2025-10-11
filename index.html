@@ -41,7 +41,61 @@
   <meta name="theme-color" content="#0f172a">
 
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
+    /* Estilos base fijos para captura */
+    * {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    
+    body {
+      font-size: 16px;
+    }
+    
+    .tabla-nombre {
+      font-size: 0.875rem;
+    }
+    
+    .tabla-puntos {
+      font-size: 1.5rem;
+    }
+    
+    .tabla-promedio {
+      font-size: 1.5rem;
+    }
+    
+    .tabla-info {
+      font-size: 0.75rem;
+    }
+    
+    .tabla-posicion {
+      font-size: 1rem;
+    }
+    
+    .titulo-tabla {
+      font-size: 1.25rem;
+    }
+    
+    .btn-reset {
+      font-size: 0.875rem;
+      padding: 0.5rem 1rem;
+      white-space: nowrap;
+    }
+    
+    .regla-descenso {
+      font-size: 0.875rem;
+      padding: 0.75rem;
+    }
+    
+    .partido-info {
+      font-size: 0.75rem;
+    }
+    
+    .equipo-titulo {
+      font-size: 1rem;
+    }
+    
     @media (max-width: 768px) {
       body {
         font-size: 14px;
@@ -275,103 +329,80 @@
         let equiposDefinitorioPorTabla = [];
         
         if (descendidoPorPromedios.id === ultimoPorTabla.id) {
-          // Si coinciden, desciende el penúltimo de la tabla
           const penultimoPorTabla = porTabla[porTabla.length - 2];
           
-          // Verificar si hay empate en la posición del penúltimo
           const puntajePenultimo = penultimoPorTabla.puntosTemporada;
           const equiposConMismoPuntaje = porTabla.filter(e => e.puntosTemporada === puntajePenultimo);
           
           if (equiposConMismoPuntaje.length > 1) {
-            // Hay empate: varios equipos con los mismos puntos del penúltimo
             hayDefinitorioPorTabla = true;
             equiposDefinitorioPorTabla = equiposConMismoPuntaje.map(e => e.id);
-            descendidoPorTabla = penultimoPorTabla; // Asignar temporalmente al penúltimo
+            descendidoPorTabla = penultimoPorTabla;
           } else {
             descendidoPorTabla = penultimoPorTabla;
           }
         } else {
-          // Si son diferentes, buscar el último de la tabla
           const puntajeUltimo = ultimoPorTabla.puntosTemporada;
           const equiposConMismoPuntaje = porTabla.filter(e => e.puntosTemporada === puntajeUltimo);
           
           if (equiposConMismoPuntaje.length > 1) {
-            // Hay empate en la última posición
             hayDefinitorioPorTabla = true;
             equiposDefinitorioPorTabla = equiposConMismoPuntaje.map(e => e.id);
-            descendidoPorTabla = ultimoPorTabla; // Asignar temporalmente al último
+            descendidoPorTabla = ultimoPorTabla;
           } else {
             descendidoPorTabla = ultimoPorTabla;
           }
         }
 
-        // Detectar empates en la zona límite de descenso
-        // Determinar quiénes descienden
         const equiposQueDescienden = [descendidoPorPromedios.id];
         if (descendidoPorTabla.id !== descendidoPorPromedios.id) {
           equiposQueDescienden.push(descendidoPorTabla.id);
         }
 
-        // Buscar empates en tabla anual que afecten a los que descienden
         let equiposEmpatados = [];
         let hayEmpate = false;
 
-        // Si ya detectamos un definitorio por tabla, usamos esos equipos
         if (hayDefinitorioPorTabla) {
           equiposEmpatados = equiposDefinitorioPorTabla;
           hayEmpate = true;
         } else {
-          // Verificar si hay empate en puntos entre los que descienden y los que NO descienden
           const puntosDescendidos = equiposQueDescienden.map(id => {
             const equipo = porTabla.find(e => e.id === id);
             return equipo ? equipo.puntosTemporada : 0;
           });
 
-          // Encontrar el puntaje más alto entre los que descienden
           const puntajeMasAltoDescendidos = Math.max(...puntosDescendidos);
 
-          // Buscar equipos que NO descienden pero tienen el mismo puntaje
           const equiposConMismoPuntaje = porTabla.filter(e => 
             e.puntosTemporada === puntajeMasAltoDescendidos
           );
 
           if (equiposConMismoPuntaje.length > equiposQueDescienden.length) {
-            // Hay empate: algunos con ese puntaje descienden y otros no
             equiposEmpatados = equiposConMismoPuntaje.map(e => e.id);
             hayEmpate = true;
           }
         }
 
-        // Detectar empates en la tabla de promedios
         let equiposEmpatadosPromedios = [];
         let hayEmpatePromedios = false;
 
-        // El último por promedios
         const ultimoPromedio = porPromedios[porPromedios.length - 1];
         const penultimoPromedio = porPromedios[porPromedios.length - 2];
 
         if (ultimoPromedio && penultimoPromedio) {
-          // Verificar si hay empate en promedio (considerando 3 decimales)
           const promedioUltimo = parseFloat(ultimoPromedio.promedio.toFixed(3));
           const promedioPenultimo = parseFloat(penultimoPromedio.promedio.toFixed(3));
 
           if (promedioUltimo === promedioPenultimo) {
-            // Buscar los equipos en la tabla anual para verificar si también están empatados en puntos
             const ultimoEnTabla = porTabla.find(e => e.id === ultimoPromedio.id);
             const penultimoEnTabla = porTabla.find(e => e.id === penultimoPromedio.id);
 
-            // Si tienen el mismo promedio Y los mismos puntos, descienden ambos sin definitorio
             const mismosPuntos = ultimoEnTabla && penultimoEnTabla &&
                                 ultimoEnTabla.puntosTemporada === penultimoEnTabla.puntosTemporada;
 
-            // IMPORTANTE: Solo hay partido definitorio si:
-            // 1. NO tienen los mismos puntos en tabla anual
-            // 2. Y el último por promedios NO es también el último por tabla anual
-            // (si ya desciende por ambos criterios, no hay definitorio)
             const ultimoEsTambienUltimoPorTabla = ultimoPromedio.id === descendidoPorTabla.id;
 
             if (!mismosPuntos && !ultimoEsTambienUltimoPorTabla) {
-              // Encontrar todos los equipos con el mismo promedio
               equiposEmpatadosPromedios = porPromedios
                 .filter(e => parseFloat(e.promedio.toFixed(3)) === promedioUltimo)
                 .map(e => e.id);
@@ -380,16 +411,12 @@
           }
         }
 
-        // Calcular puntos necesarios para salvarse
         const equiposConPuntosNecesarios = porTabla.map(equipoActual => {
-          // Determinar cuántos equipos descienden
           const cantidadDescienden = 2;
 
           let puntosNecesarios = 0;
 
           if (modoCalculo === 'seguro') {
-            // MODO SEGURO: Calcular puntos para salvarse sin depender de nadie
-            // Asume que todos ganan todos sus partidos restantes
             const equiposConMaximos = porTabla.map(equipo => ({
               id: equipo.id,
               puntosActuales: equipo.puntosTemporada,
@@ -408,10 +435,7 @@
               puntosNecesarios = Math.max(0, mejorRival.puntosMaximos + 1 - equipoActual.puntosTemporada);
             }
           } else {
-            // MODO APROXIMADO: Objetivo histórico simplificado
-            // Históricamente en Argentina se salva con ~31 puntos
             const objetivoSalvacion = 31;
-
             puntosNecesarios = Math.max(0, objetivoSalvacion - equipoActual.puntosTemporada);
           }
 
@@ -453,6 +477,122 @@
 
       const resetearTodo = () => {
         setResultados({});
+      };
+
+      const capturarImagen = async () => {
+        try {
+          // Scroll al top
+          window.scrollTo(0, 0);
+          await new Promise(resolve => setTimeout(resolve, 300));
+
+          // Capturar solo el contenedor de tablas y simulación
+          const elemento = document.getElementById('captura-container');
+          
+          if (!elemento) {
+            alert('No se pudo encontrar el contenedor');
+            return;
+          }
+          
+          // Guardar estilos originales
+          const originalStyles = {
+            bodyOverflow: document.body.style.overflow,
+            htmlOverflow: document.documentElement.style.overflow,
+            bodyHeight: document.body.style.height,
+            elementPosition: elemento.style.position
+          };
+          
+          // Aplicar estilos para captura
+          document.body.style.overflow = 'visible';
+          document.documentElement.style.overflow = 'visible';
+          document.body.style.height = 'auto';
+          elemento.style.position = 'static';
+          
+          // Forzar reflow
+          void elemento.offsetHeight;
+          
+          await new Promise(resolve => setTimeout(resolve, 200));
+          
+          // Obtener las dimensiones reales del elemento
+          const rect = elemento.getBoundingClientRect();
+          const parentRect = elemento.parentElement.getBoundingClientRect();
+          
+          const canvas = await html2canvas(elemento, {
+            backgroundColor: '#0f172a',
+            scale: 2,
+            logging: false,
+            useCORS: true,
+            allowTaint: true,
+            foreignObjectRendering: false,
+            imageTimeout: 0,
+            removeContainer: true,
+            width: rect.width,
+            height: rect.height,
+            x: rect.left - parentRect.left,
+            y: 0,
+            scrollY: 0,
+            scrollX: 0,
+            onclone: (clonedDoc) => {
+              const clonedContainer = clonedDoc.getElementById('captura-container');
+              if (clonedContainer) {
+                // Aplicar estilos al contenedor clonado
+                clonedContainer.style.position = 'static';
+                clonedContainer.style.transform = 'none';
+                clonedContainer.style.top = '0';
+                clonedContainer.style.left = '0';
+                clonedContainer.style.margin = '0 auto';
+                
+                // Recorrer todos los elementos y corregir estilos
+                const allElements = clonedContainer.querySelectorAll('*');
+                allElements.forEach(el => {
+                  // Remover transforms
+                  el.style.transform = 'none';
+                  el.style.webkitTransform = 'none';
+                  
+                  // Mantener font-size computado
+                  const computedStyle = window.getComputedStyle(el);
+                  if (computedStyle.fontSize) {
+                    el.style.fontSize = computedStyle.fontSize;
+                  }
+                  
+                  // Asegurar overflow visible en textos
+                  if (el.tagName === 'SPAN' || el.tagName === 'DIV' || el.tagName === 'P' || el.tagName === 'A') {
+                    el.style.overflow = 'visible';
+                    el.style.textOverflow = 'clip';
+                    el.style.whiteSpace = computedStyle.whiteSpace;
+                  }
+                  
+                  // Botones con texto completo
+                  if (el.tagName === 'BUTTON') {
+                    el.style.overflow = 'visible';
+                    el.style.whiteSpace = 'nowrap';
+                    el.style.fontSize = computedStyle.fontSize;
+                    el.style.padding = computedStyle.padding;
+                  }
+                });
+              }
+            }
+          });
+
+          // Restaurar estilos originales
+          document.body.style.overflow = originalStyles.bodyOverflow;
+          document.documentElement.style.overflow = originalStyles.htmlOverflow;
+          document.body.style.height = originalStyles.bodyHeight;
+          elemento.style.position = originalStyles.elementPosition;
+
+          // Descargar imagen
+          canvas.toBlob((blob) => {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `quien-se-va-${new Date().getTime()}.png`;
+            link.click();
+            URL.revokeObjectURL(url);
+          }, 'image/png', 1.0);
+          
+        } catch (error) {
+          console.error('Error al capturar imagen:', error);
+          alert('Error al capturar la imagen. Intenta nuevamente.');
+        }
       };
 
       const esDescendido = (equipoId) => {
@@ -500,12 +640,16 @@
               ),
               h('div', { className: 'flex flex-col md:flex-row gap-2' },
                 h('button', {
+                  onClick: capturarImagen,
+                  className: 'btn-reset px-4 md:px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold shadow-md text-xs md:text-sm'
+                }, '📸 Capturar'),
+                h('button', {
                   onClick: resetearTodo,
                   className: 'btn-reset px-4 md:px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold shadow-md text-xs md:text-sm'
-                }, 'Resetear Simulación'),
+                }, 'Resetear'),
                 h('button', {
                   onClick: () => setModoCalculo(modoCalculo === 'seguro' ? 'aproximado' : 'seguro'),
-                  className: 'btn-reset px-3 md:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold shadow-md text-xs md:text-sm'
+                  className: 'btn-reset px-3 md:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold shadow-md text-xs md:text-sm w-36 md:w-44'
                 }, modoCalculo === 'seguro' ? 'Modo: Seguro' : 'Modo: Aproximado')
               )
             ),
@@ -530,9 +674,8 @@
               `${calcularTabla.equiposEmpatadosPromedios.length} equipos empatados en promedio en última posición: ${calcularTabla.equiposEmpatadosPromedios.map(id => equiposIniciales.find(e => e.id === id)?.nombre).join(', ')}. Como NO tienen los mismos puntos, se define por partido definitorio entre ellos.`
             )
           ),
-          h('div', { className: 'grid grid-cols-1 gap-4' },
+          h('div', { className: 'grid grid-cols-1 gap-4', id: 'captura-container' },
             h('div', { className: 'grid grid-cols-2 md:grid-cols-2 gap-1 md:gap-4' },
-              // Tabla Anual
               h('div', { className: 'bg-white rounded-lg shadow-xl p-2 md:p-4' },
                 h('h2', { className: 'titulo-tabla text-xl font-bold mb-2 md:mb-3 text-gray-800' }, 'Tabla Anual'),
                 h('div', { className: 'space-y-1 md:space-y-1.5' },
@@ -576,7 +719,6 @@
                   })
                 )
               ),
-              // Tabla Promedios
               h('div', { className: 'bg-white rounded-lg shadow-xl p-2 md:p-4' },
                 h('h2', { className: 'titulo-tabla text-xl font-bold mb-2 md:mb-3 text-gray-800 truncate' }, 'Tabla de Promedios'),
                 h('div', { className: 'space-y-1 md:space-y-1.5' },
@@ -585,15 +727,11 @@
                     const empatePromedios = esEmpatePromedios(equipo.id);
                     const descendidoEnPromedios = esDescendido(equipo.id);
 
-                    // Verificar si hay empate en promedio entre los que descienden
                     const ultimoPromedio = calcularTabla.tablaPromedios[calcularTabla.tablaPromedios.length - 1];
                     const penultimoPromedio = calcularTabla.tablaPromedios[calcularTabla.tablaPromedios.length - 2];
                     const hayEmpateEnUltimos = ultimoPromedio && penultimoPromedio && 
                       parseFloat(ultimoPromedio.promedio.toFixed(3)) === parseFloat(penultimoPromedio.promedio.toFixed(3));
 
-                    // Mostrar en rojo si:
-                    // 1. Es el último, O
-                    // 2. Hay empate en promedios entre los últimos Y este equipo desciende
                     const mostrarRojo = empatePromedios || (esUltimo || (hayEmpateEnUltimos && descendidoEnPromedios));
 
                     return h('div', {
@@ -633,7 +771,6 @@
                 )
               )
             ),
-            // Simulación
             h('div', { className: 'bg-white rounded-lg shadow-xl p-2 md:p-4' },
               h('h2', { className: 'titulo-tabla text-xl font-bold mb-2 md:mb-3 text-gray-800' }, 'Simulación de Resultados'),
               h('div', { className: 'grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-3' },
