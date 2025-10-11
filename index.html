@@ -188,12 +188,12 @@
         {
           id: 'BAN',
           nombre: 'Banfield',
-          pj: 27,
+          pj: 28,
           puntos: 28,
-          pjPromedios: 109,
+          pjPromedios: 110,
           puntosPromedios: 121,
           partidos: [
-            { rival: 'Racing', rivalId: null, condicion: 'L', fecha: 28, partidoId: 'BAN-RAC-28' },
+            { rival: 'Racing', rivalId: null, condicion: 'L', fecha: 28, partidoId: 'BAN-RAC-28', jugado: true },
             { rival: 'Indep. Rivadavia', rivalId: null, condicion: 'V', fecha: 29, partidoId: 'BAN-IRV-29' },
             { rival: 'Lanús', rivalId: null, condicion: 'L', fecha: 30, partidoId: 'BAN-LAN-30' },
             { rival: 'Aldosivi', rivalId: 'ALD', condicion: 'L', fecha: 31, partidoId: 'BAN-ALD-31' },
@@ -278,7 +278,8 @@
       ];
 
       const [resultados, setResultados] = useState({
-        'GIM-TAL-28': 'TAL' // Talleres ganó a Gimnasia
+        'GIM-TAL-28': 'TAL', // Talleres ganó a Gimnasia
+        'BAN-RAC-28': 'EXT'  // Racing ganó a Banfield
       });
 
       const calcularTabla = useMemo(() => {
@@ -481,7 +482,8 @@
 
       const resetearTodo = () => {
         setResultados({
-          'GIM-TAL-28': 'TAL' // Mantener el partido Talleres vs Gimnasia
+          'GIM-TAL-28': 'TAL', // Mantener el partido Talleres vs Gimnasia
+          'BAN-RAC-28': 'EXT'  // Mantener el partido Racing vs Banfield
         });
       };
 
