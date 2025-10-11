@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- SEO Meta Tags -->
+  <title>Quién Se Va</title>
+  <meta name="description" content="Simulador interactivo de descenso del fútbol argentino. Calcula qué equipos descienden según tabla anual y promedios. Simula resultados en tiempo real.">
+  <meta name="keywords" content="descenso, fútbol argentino, tabla de promedios, simulador, tabla anual, descenso 2025">
+  <meta name="author" content="QuienSeVa">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://quienseva.netlify.app">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://quienseva.netlify.app">
+  <meta property="og:title" content="¿Quién Se Va? - Simulador de Descenso Fútbol Argentino">
+  <meta property="og:description" content="Simulador interactivo de descenso del fútbol argentino. Calcula qué equipos descienden según tabla anual y promedios.">
+  <meta property="og:image" content="https://quienseva.netlify.app/favicon.png">
+  <meta property="og:locale" content="es_AR">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://quienseva.netlify.app">
+  <meta property="twitter:title" content="¿Quién Se Va? - Simulador de Descenso Fútbol Argentino">
+  <meta property="twitter:description" content="Simulador interactivo de descenso del fútbol argentino. Calcula qué equipos descienden según tabla anual y promedios.">
+  <meta property="twitter:image" content="https://quienseva.netlify.app/favicon.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="favicon.png">
+  <link rel="shortcut icon" type="image/png" href="favicon.png">
+
+  <!-- Theme Color -->
+  <meta name="theme-color" content="#0f172a">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @media (max-width: 768px) {
+      body {
+        font-size: 14px;
+      }
+      .tabla-nombre {
+        font-size: 0.75rem !important;
+      }
+      .tabla-puntos {
+        font-size: 1.25rem !important;
+      }
+      .tabla-promedio {
+        font-size: 1.25rem !important;
+      }
+      .tabla-info {
+        font-size: 0.625rem !important;
+      }
+      .tabla-posicion {
+        font-size: 0.875rem !important;
+      }
+      .titulo-tabla {
+        font-size: 1rem !important;
+      }
+      .titulo-principal {
+        font-size: 1.5rem !important;
+      }
+      .btn-reset {
+        font-size: 0.75rem !important;
+        padding: 0.375rem 0.75rem !important;
+      }
+      .regla-descenso {
+        font-size: 0.7rem !important;
+        padding: 0.5rem !important;
+      }
+      .partido-info {
+        font-size: 0.625rem !important;
+      }
+      .equipo-titulo {
+        font-size: 0.875rem !important;
+      }
+      /* Reducir padding general en móviles */
+      #root > div {
+        padding: 0.5rem !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="module">
+    import React, { useState, useMemo } from 'https://esm.sh/react@18';
+    import ReactDOM from 'https://esm.sh/react-dom@18/client';
+    import { Trophy, TrendingDown } from 'https://esm.sh/lucide-react@0.263.1';
+
+    const { createElement: h } = React;
+
+    function App() {
+      const equiposIniciales = [
+        {
+          id: 'GIM',
+          nombre: 'Gimnasia',
+          pj: 27,
+          puntos: 29,
+          pjPromedios: 109,
+          puntosPromedios: 122,
+          partidos: [
+            { rival: 'Talleres', rivalId: 'TAL', condicion: 'L', fecha: 28, partidoId: 'GIM-TAL-28' },
+            { rival: 'Estudiantes', rivalId: null, condicion: 'V', fecha: 29, partidoId: 'GIM-EST-29' },
+            { rival: 'River', rivalId: null, condicion: 'V', fecha: 30, partidoId: 'GIM-RIV-30' },
+            { rival: 'Vélez', rivalId: null, condicion: 'L', fecha: 31, partidoId: 'GIM-VEL-31' },
+            { rival: 'Platense', rivalId: null, condicion: 'V', fecha: 32, partidoId: 'GIM-PLA-32' }
+          ]
+        },
+        {
+          id: 'BAN',
+          nombre: 'Banfield',
+          pj: 27,
+          puntos: 29,
+          pjPromedios: 109,
+          puntosPromedios: 122,
+          partidos: [
+            { rival: 'Racing', rivalId: null, condicion: 'L', fecha: 28, partidoId: 'BAN-RAC-28' },
+            { rival: 'Indep. Rivadavia', rivalId: null, condicion: 'V', fecha: 29, partidoId: 'BAN-IRV-29' },
+            { rival: 'Lanús', rivalId: null, condicion: 'L', fecha: 30, partidoId: 'BAN-LAN-30' },
+            { rival: 'Aldosivi', rivalId: 'ALD', condicion: 'L', fecha: 31, partidoId: 'BAN-ALD-31' },
+            { rival: 'Central Córdoba', rivalId: null, condicion: 'V', fecha: 32, partidoId: 'BAN-CCO-32' }
+          ]
+        },
+        {
+          id: 'SAR',
+          nombre: 'Sarmiento',
+          pj: 26,
+          puntos: 27,
+          pjPromedios: 108,
+          puntosPromedios: 108,
+          partidos: [
+            { rival: 'Rosario Central', rivalId: null, condicion: 'V', fecha: 23, pendiente: true, partidoId: 'SAR-RCE-27' },
+            { rival: 'River', rivalId: null, condicion: 'V', fecha: 28, partidoId: 'SAR-RIV-28' },
+            { rival: 'Vélez', rivalId: null, condicion: 'L', fecha: 29, partidoId: 'SAR-VEL-29' },
+            { rival: 'Platense', rivalId: null, condicion: 'V', fecha: 30, partidoId: 'SAR-PLA-30' },
+            { rival: 'Instituto', rivalId: null, condicion: 'L', fecha: 31, partidoId: 'SAR-INS-31' },
+            { rival: 'San Lorenzo', rivalId: null, condicion: 'V', fecha: 32, partidoId: 'SAR-SLO-32' }
+          ]
+        },
+        {
+          id: 'GOD',
+          nombre: 'Godoy Cruz',
+          pj: 27,
+          puntos: 26,
+          pjPromedios: 109,
+          puntosPromedios: 153,
+          partidos: [
+            { rival: 'Indep. Rivadavia', rivalId: null, condicion: 'V', fecha: 28, partidoId: 'GOD-IRV-28' },
+            { rival: 'Lanús', rivalId: null, condicion: 'V', fecha: 29, partidoId: 'GOD-LAN-29' },
+            { rival: 'San Martín', rivalId: 'SMA', condicion: 'L', fecha: 30, partidoId: 'GOD-SMA-30' },
+            { rival: 'Atl. Tucumán', rivalId: null, condicion: 'V', fecha: 31, partidoId: 'GOD-ATU-31' },
+            { rival: 'Riestra', rivalId: null, condicion: 'L', fecha: 32, partidoId: 'GOD-RIE-32' }
+          ]
+        },
+        {
+          id: 'TAL',
+          nombre: 'Talleres',
+          pj: 27,
+          puntos: 24,
+          pjPromedios: 109,
+          puntosPromedios: 163,
+          partidos: [
+            { rival: 'Gimnasia', rivalId: 'GIM', condicion: 'V', fecha: 28, partidoId: 'GIM-TAL-28' },
+            { rival: 'River', rivalId: null, condicion: 'L', fecha: 29, partidoId: 'TAL-RIV-29' },
+            { rival: 'Vélez', rivalId: null, condicion: 'V', fecha: 30, partidoId: 'TAL-VEL-30' },
+            { rival: 'Platense', rivalId: null, condicion: 'L', fecha: 31, partidoId: 'TAL-PLA-31' },
+            { rival: 'Instituto', rivalId: null, condicion: 'V', fecha: 32, partidoId: 'TAL-INS-32' }
+          ]
+        },
+        {
+          id: 'SMA',
+          nombre: 'San Martín',
+          pj: 28,
+          puntos: 23,
+          pjPromedios: 28,
+          puntosPromedios: 23,
+          partidos: [
+            { rival: 'Independiente', rivalId: null, condicion: 'L', fecha: 29, partidoId: 'SMA-IND-29' },
+            { rival: 'Godoy Cruz', rivalId: 'GOD', condicion: 'V', fecha: 30, partidoId: 'GOD-SMA-30' },
+            { rival: 'Lanús', rivalId: null, condicion: 'L', fecha: 31, partidoId: 'SMA-LAN-31' },
+            { rival: 'Aldosivi', rivalId: 'ALD', condicion: 'V', fecha: 32, partidoId: 'ALD-SMA-32' }
+          ]
+        },
+        {
+          id: 'ALD',
+          nombre: 'Aldosivi',
+          pj: 27,
+          puntos: 21,
+          pjPromedios: 27,
+          puntosPromedios: 21,
+          partidos: [
+            { rival: 'Huracán', rivalId: null, condicion: 'L', fecha: 28, partidoId: 'ALD-HUR-28' },
+            { rival: 'Racing', rivalId: null, condicion: 'V', fecha: 29, partidoId: 'ALD-RAC-29' },
+            { rival: 'Indep. Rivadavia', rivalId: null, condicion: 'L', fecha: 30, partidoId: 'ALD-IRV-30' },
+            { rival: 'Banfield', rivalId: 'BAN', condicion: 'V', fecha: 31, partidoId: 'BAN-ALD-31' },
+            { rival: 'San Martín', rivalId: 'SMA', condicion: 'L', fecha: 32, partidoId: 'ALD-SMA-32' }
+          ]
+        }
+      ];
+
+      const [resultados, setResultados] = useState({});
+
+      const calcularTabla = useMemo(() => {
+        const equiposCalculados = equiposIniciales.map(equipo => {
+          let puntosTemporada = equipo.puntos;
+          let pjTemporada = equipo.pj;
+          let puntosPromediosTotales = equipo.puntosPromedios;
+          let pjPromediosTotales = equipo.pjPromedios;
+
+          equipo.partidos.forEach((partido) => {
+            const resultado = resultados[partido.partidoId];
+            if (resultado) {
+              pjTemporada += 1;
+              pjPromediosTotales += 1;
+
+              if (resultado === equipo.id) {
+                puntosTemporada += 3;
+                puntosPromediosTotales += 3;
+              } else if (resultado === 'E') {
+                puntosTemporada += 1;
+                puntosPromediosTotales += 1;
+              }
+            }
+          });
+
+          const promedio = puntosPromediosTotales / pjPromediosTotales;
+
+          return {
+            ...equipo,
+            puntosTemporada,
+            pjTemporada,
+            puntosPromediosTotales,
+            pjPromediosTotales,
+            promedio
+          };
+        });
+
+        const porTabla = [...equiposCalculados].sort((a, b) => b.puntosTemporada - a.puntosTemporada);
+        const porPromedios = [...equiposCalculados].sort((a, b) => b.promedio - a.promedio);
+
+        const descendidoPorPromedios = porPromedios[porPromedios.length - 1];
+        let descendidoPorTabla = porTabla[porTabla.length - 1];
+
+        if (descendidoPorPromedios.id === descendidoPorTabla.id) {
+          descendidoPorTabla = porTabla[porTabla.length - 2];
+        }
+
+        // Detectar todos los equipos empatados en puntos en zona de descenso (tabla)
+        const ultimoTabla = porTabla[porTabla.length - 1];
+        const puntosUltimo = ultimoTabla.puntosTemporada;
+
+        // Encontrar todos los equipos con los mismos puntos que el último
+        const equiposEmpatados = porTabla.filter(e => e.puntosTemporada === puntosUltimo).map(e => e.id);
+        const hayEmpate = equiposEmpatados.length > 1;
+
+        return {
+          equipos: porTabla,
+          descendidoPorPromedios: descendidoPorPromedios.id,
+          descendidoPorTabla: descendidoPorTabla.id,
+          tablaPromedios: porPromedios,
+          hayEmpateTabla: hayEmpate,
+          equiposEmpatadosTabla: hayEmpate ? equiposEmpatados : []
+        };
+      }, [resultados]);
+
+      const handleResultado = (partidoId, ganadorId, esLocal, esEmpate = false) => {
+        setResultados(prev => {
+          const resultadoActual = prev[partidoId];
+
+          if (esEmpate) {
+            return {
+              ...prev,
+              [partidoId]: resultadoActual === 'E' ? null : 'E'
+            };
+          }
+
+          return {
+            ...prev,
+            [partidoId]: resultadoActual === ganadorId ? null : ganadorId
+          };
+        });
+      };
+
+      const resetearTodo = () => {
+        setResultados({});
+      };
+
+      const esDescendido = (equipoId) => {
+        return equipoId === calcularTabla.descendidoPorPromedios || 
+               equipoId === calcularTabla.descendidoPorTabla;
+      };
+
+      const tipoDescenso = (equipoId) => {
+        if (equipoId === calcularTabla.descendidoPorPromedios &&
+            equipoId === calcularTabla.descendidoPorTabla) {
+          return 'Ambos';
+        }
+        if (equipoId === calcularTabla.descendidoPorPromedios) return 'Promedios';
+        if (equipoId === calcularTabla.descendidoPorTabla) return 'Tabla';
+        return null;
+      };
+
+      const esEmpateDescenso = (equipoId) => {
+        return calcularTabla.equiposEmpatadosTabla.includes(equipoId);
+      };
+
+      return h('div', { className: 'min-h-screen bg-slate-950 p-4' },
+        h('div', { className: 'max-w-7xl mx-auto' },
+          h('div', { className: 'bg-white rounded-lg shadow-2xl p-3 md:p-6 mb-4 md:mb-6' },
+            h('div', { className: 'flex items-center justify-between mb-3 md:mb-4' },
+              h('img', {
+                src: 'favicon.png',
+                alt: '¿Quién Se Va?',
+                className: 'h-12 md:h-16 w-auto'
+              }),
+              h('button', {
+                onClick: resetearTodo,
+                className: 'btn-reset px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold shadow-md'
+              }, 'Resetear Todo')
+            ),
+            h('div', { className: 'regla-descenso bg-blue-50 border-l-4 border-blue-500 p-2 md:p-3 text-sm mb-2 md:mb-3' },
+              h('strong', null, 'Regla de descenso: '),
+              'Descienden 2 equipos: el último por promedios y el último por tabla anual. Si coinciden, desciende también el penúltimo de la tabla. Si hay empate en puntos en zona de descenso, se define por partido definitorio.'
+            ),
+            calcularTabla.hayEmpateTabla && h('div', { className: 'regla-descenso bg-orange-50 border-l-4 border-orange-500 p-2 md:p-3 text-sm' },
+              h('strong', null, '⚠️ Partido Definitorio: '),
+              `${calcularTabla.equiposEmpatadosTabla.length} equipos empatados en puntos en zona de descenso: ${calcularTabla.equiposEmpatadosTabla.map(id => equiposIniciales.find(e => e.id === id)?.nombre).join(', ')}. Se define por partido definitorio entre ellos.`
+            )
+          ),
+          h('div', { className: 'grid grid-cols-1 gap-4' },
+            h('div', { className: 'grid grid-cols-2 md:grid-cols-2 gap-3 md:gap-4' },
+              // Tabla Anual
+              h('div', { className: 'bg-white rounded-lg shadow-xl p-2 md:p-4' },
+                h('h2', { className: 'titulo-tabla text-xl font-bold mb-2 md:mb-3 text-gray-800' }, 'Tabla Anual'),
+                h('div', { className: 'space-y-1 md:space-y-1.5' },
+                  calcularTabla.equipos.map((equipo, idx) => {
+                    const descendido = esDescendido(equipo.id);
+                    const tipo = tipoDescenso(equipo.id);
+                    const empate = esEmpateDescenso(equipo.id);
+
+                    return h('div', {
+                      key: equipo.id,
+                      className: `p-1.5 md:p-2.5 rounded flex items-center justify-between ${empate ? 'bg-orange-100 border-2 border-orange-400' : descendido ? 'bg-red-100 border-2 border-red-400' : 'bg-green-50'}`
+                    },
+                      h('div', { className: 'flex items-center gap-1.5 md:gap-2' },
+                        h('span', { className: 'tabla-posicion font-bold text-lg text-gray-700 w-5 md:w-6' }, idx + 1),
+                        h('div', null,
+                          h('div', { className: 'tabla-nombre font-bold text-base' }, equipo.nombre),
+                          h('div', { className: 'tabla-info text-xs text-gray-600 flex items-center gap-1.5 md:gap-2' },
+                            h('span', null, `PJ: ${equipo.pjTemporada}`),
+                            empate && h('span', { className: 'font-semibold text-orange-600 flex items-center gap-0.5' },
+                              '⚠️ Def'
+                            ),
+                            descendido && !empate && h('span', { className: 'font-semibold text-red-600 flex items-center gap-0.5' },
+                              h(TrendingDown, { size: 10, className: 'md:w-3 md:h-3' }),
+                              tipo === 'Ambos' ? 'Prom+Tabla' : tipo === 'Promedios' ? 'Prom' : 'Tabla'
+                            )
+                          )
+                        )
+                      ),
+                      h('div', { className: 'tabla-puntos text-2xl font-bold text-green-700' }, equipo.puntosTemporada)
+                    );
+                  })
+                )
+              ),
+              // Tabla Promedios
+              h('div', { className: 'bg-white rounded-lg shadow-xl p-2 md:p-4' },
+                h('h2', { className: 'titulo-tabla text-xl font-bold mb-2 md:mb-3 text-gray-800' }, 'Tabla de Promedios'),
+                h('div', { className: 'space-y-1 md:space-y-1.5' },
+                  calcularTabla.tablaPromedios.map((equipo, idx) => {
+                    const esUltimo = idx === calcularTabla.tablaPromedios.length - 1;
+
+                    return h('div', {
+                      key: equipo.id,
+                      className: `p-1.5 md:p-2.5 rounded ${esUltimo ? 'bg-red-100 border-2 border-red-400' : 'bg-blue-50'}`
+                    },
+                      h('div', { className: 'flex items-center justify-between' },
+                        h('div', { className: 'flex items-center gap-1.5 md:gap-2' },
+                          h('span', { className: 'tabla-posicion font-bold text-lg text-gray-700 w-5 md:w-6' }, idx + 1),
+                          h('div', null,
+                            h('div', { className: 'tabla-nombre font-bold text-base' }, equipo.nombre),
+                            h('div', { className: 'tabla-info text-xs text-gray-600' },
+                              `${equipo.puntosPromediosTotales} pts / ${equipo.pjPromediosTotales} PJ`
+                            )
+                          )
+                        ),
+                        h('div', { className: 'text-right' },
+                          h('div', { className: 'tabla-promedio text-2xl font-bold text-blue-700' },
+                            equipo.promedio.toFixed(3)
+                          ),
+                          esUltimo && h('div', { className: 'tabla-info text-xs font-semibold text-red-600 flex items-center gap-0.5 justify-end' },
+                            h(TrendingDown, { size: 10, className: 'md:w-3 md:h-3' }),
+                            'Desc'
+                          )
+                        )
+                      )
+                    );
+                  })
+                )
+              )
+            ),
+            // Simulación
+            h('div', { className: 'bg-white rounded-lg shadow-xl p-2 md:p-4' },
+              h('h2', { className: 'titulo-tabla text-xl font-bold mb-2 md:mb-3 text-gray-800' }, 'Simulación de Resultados'),
+              h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-3' },
+                equiposIniciales.map(equipo =>
+                  h('div', { key: equipo.id, className: 'border-2 border-gray-200 rounded-lg p-2 md:p-3' },
+                    h('h3', { className: 'equipo-titulo font-bold text-base mb-1.5 md:mb-2 text-gray-800' }, equipo.nombre),
+                    h('div', { className: 'space-y-1 md:space-y-1.5' },
+                      equipo.partidos.map((partido, idx) => {
+                        const esLocal = partido.condicion === 'L';
+                        const resultadoPartido = resultados[partido.partidoId];
+                        const equipoGano = resultadoPartido === equipo.id;
+                        const esEmpate = resultadoPartido === 'E';
+                        const equipoPerdio = resultadoPartido && resultadoPartido !== equipo.id && resultadoPartido !== 'E';
+
+                        return h('div', { key: idx, className: 'p-1 md:p-1.5 rounded' },
+                          h('div', { className: 'partido-info text-xs mb-0.5 md:mb-1 flex items-center gap-1 md:gap-1.5' },
+                            h('span', { className: 'font-semibold text-gray-700' }, `F${partido.fecha}`),
+                            h('span', {
+                              className: `px-1 md:px-1.5 py-0.5 rounded text-xs ${esLocal ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'}`
+                            }, esLocal ? 'L' : 'V'),
+                            h('span', { className: 'text-gray-600 text-xs truncate' }, partido.rival),
+                            partido.pendiente && h('span', { className: 'text-xs bg-yellow-100 text-yellow-800 px-1 md:px-1.5 py-0.5 rounded' }, 'Pend')
+                          ),
+                          h('div', { className: 'flex gap-1' },
+                            h('button', {
+                              onClick: () => handleResultado(partido.partidoId, equipo.id, esLocal),
+                              className: `flex-1 py-1 px-1 rounded text-xs font-semibold ${equipoGano ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-green-100'}`
+                            }, 'G'),
+                            h('button', {
+                              onClick: () => handleResultado(partido.partidoId, equipo.id, esLocal, true),
+                              className: `flex-1 py-1 px-1 rounded text-xs font-semibold ${esEmpate ? 'bg-yellow-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-yellow-100'}`
+                            }, 'E'),
+                            h('button', {
+                              onClick: () => handleResultado(partido.partidoId, partido.rivalId || 'EXT', esLocal),
+                              className: `flex-1 py-1 px-1 rounded text-xs font-semibold ${equipoPerdio ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-red-100'}`
+                            }, 'P')
+                          )
+                        );
+                      })
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(h(App));
+  </script>
+</body>
+</html>
