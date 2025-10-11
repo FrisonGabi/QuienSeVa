@@ -45,10 +45,10 @@
         font-size: 0.75rem !important;
       }
       .tabla-puntos {
-        font-size: 1.25rem !important;
+        font-size: 1rem !important;
       }
       .tabla-promedio {
-        font-size: 1.25rem !important;
+        font-size: 1rem !important;
       }
       .tabla-info {
         font-size: 0.625rem !important;
@@ -462,7 +462,7 @@
 
                     return h('div', {
                       key: equipo.id,
-                      className: `p-1.5 md:p-2.5 rounded flex items-center justify-between ${empate ? 'bg-orange-100 border-2 border-orange-400' : descendido ? 'bg-red-100 border-2 border-red-400' : 'bg-green-50'}`
+                      className: `p-1.5 md:p-2.5 rounded flex items-center justify-between min-h-[70px] md:min-h-[80px] ${empate ? 'bg-orange-100 border-2 border-orange-400' : descendido ? 'bg-red-100 border-2 border-red-400' : 'bg-green-50'}`
                     },
                       h('div', { className: 'flex items-center md:gap-2' },
                         h('span', { className: 'tabla-posicion font-bold text-lg text-gray-700 w-5 md:w-6' }, idx + 1),
@@ -495,14 +495,14 @@
               ),
               // Tabla Promedios
               h('div', { className: 'bg-white rounded-lg shadow-xl p-2 md:p-4' },
-                h('h2', { className: 'titulo-tabla text-xl font-bold mb-2 md:mb-3 text-gray-800' }, 'Tabla de Promedios'),
+                h('h2', { className: 'titulo-tabla text-xl font-bold mb-2 md:mb-3 text-gray-800 truncate' }, 'Tabla de Promedios'),
                 h('div', { className: 'space-y-1 md:space-y-1.5' },
                   calcularTabla.tablaPromedios.map((equipo, idx) => {
                     const esUltimo = idx === calcularTabla.tablaPromedios.length - 1;
 
                     return h('div', {
                       key: equipo.id,
-                      className: `p-1.5 md:p-2.5 rounded ${esUltimo ? 'bg-red-100 border-2 border-red-400' : 'bg-blue-50'}`
+                      className: `p-1.5 md:p-2.5 rounded min-h-[70px] md:min-h-[80px] ${esUltimo ? 'bg-red-100 border-2 border-red-400' : 'bg-blue-50'}`
                     },
                       h('div', { className: 'flex items-center justify-between' },
                         h('div', { className: 'flex items-center md:gap-2' },
