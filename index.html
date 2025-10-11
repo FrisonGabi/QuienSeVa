@@ -91,6 +91,20 @@
     import ReactDOM from 'https://esm.sh/react-dom@18/client';
     import { Trophy, TrendingDown } from 'https://esm.sh/lucide-react@0.263.1';
 
+    // Ícono de X (Twitter)
+    const XIcon = ({ size = 16, className = '' }) =>
+      React.createElement('svg', {
+        width: size,
+        height: size,
+        viewBox: '0 0 24 24',
+        fill: 'currentColor',
+        className
+      },
+        React.createElement('path', {
+          d: 'M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z'
+        })
+      );
+
     const { createElement: h } = React;
 
     function App() {
@@ -210,6 +224,7 @@
           let pjTemporada = equipo.pj;
           let puntosPromediosTotales = equipo.puntosPromedios;
           let pjPromediosTotales = equipo.pjPromedios;
+          let partidosRestantes = 0;
 
           equipo.partidos.forEach((partido) => {
             const resultado = resultados[partido.partidoId];
@@ -224,6 +239,8 @@
                 puntosTemporada += 1;
                 puntosPromediosTotales += 1;
               }
+            } else {
+              partidosRestantes += 1;
             }
           });
 
@@ -235,7 +252,8 @@
             pjTemporada,
             puntosPromediosTotales,
             pjPromediosTotales,
-            promedio
+            promedio,
+            partidosRestantes
           };
         });
 
@@ -249,16 +267,175 @@
           descendidoPorTabla = porTabla[porTabla.length - 2];
         }
 
-        // Detectar todos los equipos empatados en puntos en zona de descenso (tabla)
-        const ultimoTabla = porTabla[porTabla.length - 1];
-        const puntosUltimo = ultimoTabla.puntosTemporada;
+        // Detectar empates en la zona límite de descenso
+        // La zona de descenso depende de si el último por promedios coincide con el último por tabla
+        const cantidadDescienden = descendidoPorPromedios.id === descendidoPorTabla.id ? 2 : 2;
 
-        // Encontrar todos los equipos con los mismos puntos que el último
-        const equiposEmpatados = porTabla.filter(e => e.puntosTemporada === puntosUltimo).map(e => e.id);
-        const hayEmpate = equiposEmpatados.length > 1;
+        // Posición límite: el último que NO desciende
+        const posicionLimite = porTabla.length - cantidadDescienden - 1;
+
+        // Buscar empates que afecten la zona de descenso
+        // Un empate es relevante si incluye al equipo en la posición límite o a cualquiera en zona de descenso
+        let equiposEmpatados = [];
+        let hayEmpate = false;
+
+        if (posicionLimite >= 0) {
+          // Puntos del equipo en la posición límite (último que se salva)
+          const puntosLimite = porTabla[posicionLimite].puntosTemporada;
+
+          // Puntos del primer equipo en zona de descenso
+          const puntosDescenso = porTabla[posicionLimite + 1]?.puntosTemporada;
+
+          // Hay empate si el último que se salva tiene los mismos puntos que alguno en zona de descenso
+          if (puntosLimite === puntosDescenso) {
+            // Encontrar todos los equipos con esos puntos (tanto arriba como abajo de la línea)
+            equiposEmpatados = porTabla
+              .filter(e => e.puntosTemporada === puntosLimite)
+              .map(e => e.id);
+            hayEmpate = equiposEmpatados.length > 1;
+          } else {
+            // También verificar si hay empate dentro de la zona de descenso
+            const equiposEnDescenso = porTabla.slice(posicionLimite + 1);
+            const puntosUltimoDescenso = equiposEnDescenso[equiposEnDescenso.length - 1]?.puntosTemporada;
+
+            // Si varios equipos en zona de descenso tienen los mismos puntos
+            const equiposConMismosPuntos = equiposEnDescenso.filter(e => e.puntosTemporada === puntosUltimoDescenso);
+            if (equiposConMismosPuntos.length > 1 && equiposConMismosPuntos.length === equiposEnDescenso.length) {
+              equiposEmpatados = equiposConMismosPuntos.map(e => e.id);
+              hayEmpate = true;
+            }
+          }
+        }
+
+        // Calcular puntos necesarios para salvarse
+        const equiposConPuntosNecesarios = porTabla.map(equipoActual => {
+          // Determinar cuántos equipos descienden
+          const cantidadDescienden = descendidoPorPromedios.id === descendidoPorTabla.id ? 2 : 2;
+
+          // Para cada equipo, calcular el peor escenario posible
+          // donde todos los demás maximizan sus puntos
+
+          // Identificar todos los partidos directos pendientes
+          const partidosDirectosPendientes = [];
+          porTabla.forEach(eq => {
+            eq.partidos.forEach(partido => {
+              const resultado = resultados[partido.partidoId];
+              if (!resultado && partido.rivalId) {
+                const rivalEstaEnLista = porTabla.some(e => e.id === partido.rivalId);
+                if (rivalEstaEnLista && !partidosDirectosPendientes.some(p => p.id === partido.partidoId)) {
+                  partidosDirectosPendientes.push({
+                    id: partido.partidoId,
+                    equipo1: eq.id,
+                    equipo2: partido.rivalId
+                  });
+                }
+              }
+            });
+          });
+
+          // Calcular puntos máximos para cada equipo en el peor escenario para equipoActual
+          const puntosMaximosEquipos = porTabla.map(equipo => {
+            let puntosMax = equipo.puntosTemporada;
+            let partidosContados = [];
+
+            equipo.partidos.forEach(partido => {
+              const resultado = resultados[partido.partidoId];
+              if (!resultado) { // Solo partidos pendientes
+                const esPartidoDirecto = partido.rivalId && porTabla.some(e => e.id === partido.rivalId);
+
+                if (esPartidoDirecto) {
+                  // Es un partido directo
+                  if (equipo.id === equipoActual.id) {
+                    // El equipo actual pierde todos sus partidos (peor caso)
+                    puntosMax += 0;
+                  } else if (partido.rivalId === equipoActual.id) {
+                    // Juega contra el equipo actual, asumimos que gana
+                    puntosMax += 3;
+                  } else {
+                    // Partido directo entre otros dos equipos
+                    // Para el peor escenario del equipoActual, este equipo gana
+                    puntosMax += 3;
+                  }
+                } else {
+                  // Partido contra equipo externo, asumimos que gana
+                  puntosMax += 3;
+                }
+              }
+            });
+
+            return {
+              id: equipo.id,
+              puntosActuales: equipo.puntosTemporada,
+              puntosMaximos: puntosMax
+            };
+          });
+
+          // Ahora ajustamos por partidos directos entre otros equipos
+          // Si hay un partido directo entre equipos A y B (no es equipoActual),
+          // ambos no pueden ganar, entonces restamos 3 puntos al que tenga menos
+          partidosDirectosPendientes.forEach(pd => {
+            if (pd.equipo1 !== equipoActual.id && pd.equipo2 !== equipoActual.id) {
+              // Es un partido entre otros dos equipos
+              const eq1 = puntosMaximosEquipos.find(e => e.id === pd.equipo1);
+              const eq2 = puntosMaximosEquipos.find(e => e.id === pd.equipo2);
+
+              // En el peor caso para equipoActual, el que tiene menos puntos actuales pierde
+              // (para maximizar la diferencia con equipoActual)
+              if (eq1 && eq2) {
+                if (eq1.puntosActuales <= eq2.puntosActuales) {
+                  eq1.puntosMaximos -= 3; // Este equipo pierde el partido directo
+                } else {
+                  eq2.puntosMaximos -= 3; // Este equipo pierde el partido directo
+                }
+              }
+            }
+          });
+
+          // Ordenar por puntos máximos
+          const ordenadosPorMax = [...puntosMaximosEquipos].sort((a, b) => b.puntosMaximos - a.puntosMaximos);
+
+          // Para salvarse, necesita estar fuera de las últimas (cantidadDescienden) posiciones
+          // incluso en el peor escenario
+
+          // Encontrar el equipo que estaría en la posición cantidadDescienden desde abajo
+          // (el último que NO desciende)
+          const posicionSalvacion = ordenadosPorMax.length - cantidadDescienden;
+
+          if (posicionSalvacion <= 0) {
+            // No hay suficientes equipos, todos en riesgo
+            return {
+              ...equipoActual,
+              puntosNecesarios: 999
+            };
+          }
+
+          // El equipo necesita tener más puntos que el máximo del equipo en posición de descenso
+          const equiposDescenso = ordenadosPorMax.slice(posicionSalvacion);
+          const equiposDescensoSinActual = equiposDescenso.filter(e => e.id !== equipoActual.id);
+
+          if (equiposDescensoSinActual.length === 0) {
+            // Está en zona segura
+            return {
+              ...equipoActual,
+              puntosNecesarios: 0
+            };
+          }
+
+          // Necesita superar al mejor de los equipos en zona de descenso (excluyéndose a sí mismo)
+          const mejorEnDescenso = equiposDescensoSinActual.reduce((max, e) =>
+            e.puntosMaximos > max.puntosMaximos ? e : max
+          );
+
+          const puntosNecesarios = Math.max(0, mejorEnDescenso.puntosMaximos + 1 - equipoActual.puntosTemporada);
+
+          return {
+            ...equipoActual,
+            puntosNecesarios
+          };
+        });
 
         return {
-          equipos: porTabla,
+          equipos: equiposConPuntosNecesarios,
           descendidoPorPromedios: descendidoPorPromedios.id,
           descendidoPorTabla: descendidoPorTabla.id,
           tablaPromedios: porPromedios,
@@ -312,19 +489,30 @@
         h('div', { className: 'max-w-7xl mx-auto' },
           h('div', { className: 'bg-white rounded-lg shadow-2xl p-3 md:p-6 mb-4 md:mb-6' },
             h('div', { className: 'flex items-center justify-between mb-3 md:mb-4' },
-              h('img', {
-                src: 'favicon.png',
-                alt: '¿Quién Se Va?',
-                className: 'h-12 md:h-16 w-auto'
-              }),
+              h('div', { className: 'flex items-center gap-2 md:gap-3' },
+                h('img', {
+                  src: 'favicon.png',
+                  alt: '¿Quién Se Va?',
+                  className: 'h-12 md:h-16 w-auto'
+                }),
+                h('a', {
+                  href: 'https://x.com/zorritofassi',
+                  target: '_blank',
+                  rel: 'noopener noreferrer',
+                  className: 'flex items-center gap-1 text-xs md:text-sm text-slate-950 hover:text-blue-600 transition-colors font-semibold'
+                },
+                  h(XIcon, { size: 14, className: 'md:w-4 md:h-4' }),
+                  'ZorritoFassi'
+                )
+              ),
               h('button', {
                 onClick: resetearTodo,
                 className: 'btn-reset px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold shadow-md'
-              }, 'Resetear Todo')
+              }, 'Resetear Simulación')
             ),
             h('div', { className: 'regla-descenso bg-blue-50 border-l-4 border-blue-500 p-2 md:p-3 text-sm mb-2 md:mb-3' },
-              h('strong', null, 'Regla de descenso: '),
-              'Descienden 2 equipos: el último por promedios y el último por tabla anual. Si coinciden, desciende también el penúltimo de la tabla. Si hay empate en puntos en zona de descenso, se define por partido definitorio.'
+              h('strong', null, 'Descienden 2 equipos: '),
+              ' el último por promedios y el último por tabla anual. Si coinciden, desciende también el penúltimo de la tabla. Si hay empate en puntos en zona de descenso, se define por partido definitorio.'
             ),
             calcularTabla.hayEmpateTabla && h('div', { className: 'regla-descenso bg-orange-50 border-l-4 border-orange-500 p-2 md:p-3 text-sm' },
               h('strong', null, '⚠️ Partido Definitorio: '),
@@ -350,19 +538,27 @@
                         h('span', { className: 'tabla-posicion font-bold text-lg text-gray-700 w-5 md:w-6' }, idx + 1),
                         h('div', null,
                           h('div', { className: 'tabla-nombre font-bold text-base' }, equipo.nombre),
-                          h('div', { className: 'tabla-info text-xs text-gray-600 flex items-center gap-1.5 md:gap-2' },
-                            h('span', null, `PJ: ${equipo.pjTemporada}`),
-                            empate && h('span', { className: 'font-semibold text-orange-600 flex items-center gap-0.5' },
-                              '⚠️ Def'
+                          h('div', { className: 'tabla-info text-xs text-gray-600' },
+                            h('div', null, `PJ: ${equipo.pjTemporada}`),
+                            (equipo.puntosNecesarios === 0 && !descendido && !empate) && h('div', { className: 'text-green-600 font-semibold' },
+                              'Salvado'
                             ),
-                            descendido && !empate && h('span', { className: 'font-semibold text-red-600 flex items-center gap-0.5' },
-                              h(TrendingDown, { size: 10, className: 'md:w-3 md:h-3' }),
-                              tipo === 'Ambos' ? 'Prom+Tabla' : tipo === 'Promedios' ? 'Prom' : 'Tabla'
+                            equipo.puntosNecesarios > 0 && h('div', { className: 'text-blue-600 font-semibold' },
+                              `Necesita: ${equipo.puntosNecesarios} pts`
+                            ),
+                            empate && h('div', { className: 'font-semibold text-orange-600 flex items-center gap-0.5' },
+                              '⚠️ Def'
                             )
                           )
                         )
                       ),
-                      h('div', { className: 'tabla-puntos text-2xl font-bold text-green-700' }, equipo.puntosTemporada)
+                      h('div', { className: 'text-right' },
+                        h('div', { className: 'tabla-puntos text-2xl font-bold text-green-700' }, equipo.puntosTemporada),
+                        descendido && !empate && h('div', { className: 'tabla-info text-xs font-semibold text-red-600 flex items-center gap-0.5 justify-end' },
+                          h(TrendingDown, { size: 10, className: 'md:w-3 md:h-3' }),
+                          tipo === 'Ambos' ? 'Prom+Tabla' : tipo === 'Promedios' ? 'Prom' : 'Tabla'
+                        )
+                      )
                     );
                   })
                 )
@@ -406,7 +602,7 @@
             // Simulación
             h('div', { className: 'bg-white rounded-lg shadow-xl p-2 md:p-4' },
               h('h2', { className: 'titulo-tabla text-xl font-bold mb-2 md:mb-3 text-gray-800' }, 'Simulación de Resultados'),
-              h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-3' },
+              h('div', { className: 'grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-3' },
                 equiposIniciales.map(equipo =>
                   h('div', { key: equipo.id, className: 'border-2 border-gray-200 rounded-lg p-2 md:p-3' },
                     h('h3', { className: 'equipo-titulo font-bold text-base mb-1.5 md:mb-2 text-gray-800' }, equipo.nombre),
