@@ -421,15 +421,15 @@
                   'ZorritoFassi'
                 )
               ),
-              h('div', { className: 'flex gap-2' },
-                h('button', {
-                  onClick: () => setModoCalculo(modoCalculo === 'seguro' ? 'aproximado' : 'seguro'),
-                  className: 'btn-reset px-3 md:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold shadow-md text-xs md:text-sm'
-                }, modoCalculo === 'seguro' ? 'Modo: Seguro' : 'Modo: Aproximado'),
+              h('div', { className: 'flex flex-col md:flex-row gap-2' },
                 h('button', {
                   onClick: resetearTodo,
                   className: 'btn-reset px-4 md:px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold shadow-md text-xs md:text-sm'
-                }, 'Resetear Simulación')
+                }, 'Resetear Simulación'),
+                h('button', {
+                  onClick: () => setModoCalculo(modoCalculo === 'seguro' ? 'aproximado' : 'seguro'),
+                  className: 'btn-reset px-3 md:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold shadow-md text-xs md:text-sm'
+                }, modoCalculo === 'seguro' ? 'Modo: Seguro' : 'Modo: Aproximado')
               )
             ),
             h('div', { className: 'regla-descenso bg-blue-50 border-l-4 border-blue-500 p-2 md:p-3 text-sm mb-2 md:mb-3' },
@@ -450,7 +450,7 @@
             )
           ),
           h('div', { className: 'grid grid-cols-1 gap-4' },
-            h('div', { className: 'grid grid-cols-2 md:grid-cols-2 gap-3 md:gap-4' },
+            h('div', { className: 'grid grid-cols-2 md:grid-cols-2 gap-1 md:gap-4' },
               // Tabla Anual
               h('div', { className: 'bg-white rounded-lg shadow-xl p-2 md:p-4' },
                 h('h2', { className: 'titulo-tabla text-xl font-bold mb-2 md:mb-3 text-gray-800' }, 'Tabla Anual'),
