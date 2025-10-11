@@ -467,7 +467,12 @@
                       h('div', { className: 'flex items-center md:gap-2' },
                         h('span', { className: 'tabla-posicion font-bold text-lg text-gray-700 w-5 md:w-6' }, idx + 1),
                         h('div', null,
-                          h('div', { className: 'tabla-nombre font-bold text-base' }, equipo.nombre),
+                          h('div', { className: 'flex items-center gap-1 md:gap-2' },
+                            h('span', { className: 'tabla-nombre font-bold text-base' }, equipo.nombre),
+                            empate && h('span', { className: 'font-semibold text-orange-600 text-[10px] md:text-xs flex items-center gap-0.5' },
+                              '⚠️', h('span', null, 'Def')
+                            )
+                          ),
                           h('div', { className: 'tabla-info text-xs text-gray-600' },
                             h('div', null, `PJ: ${equipo.pjTemporada}`),
                             (equipo.puntosNecesarios === 0 && !descendido && !empate) && h('div', { className: 'text-green-600 font-semibold' },
@@ -475,9 +480,6 @@
                             ),
                             equipo.puntosNecesarios > 0 && h('div', { className: 'text-blue-600 font-semibold' },
                               `Necesita: ${equipo.puntosNecesarios} pts`
-                            ),
-                            empate && h('div', { className: 'font-semibold text-orange-600 flex items-center gap-0.5' },
-                              '⚠️ Def'
                             )
                           )
                         )
@@ -510,7 +512,10 @@
                           h('div', null,
                             h('div', { className: 'tabla-nombre font-bold text-base' }, equipo.nombre),
                             h('div', { className: 'tabla-info text-xs text-gray-600' },
-                              `${equipo.puntosPromediosTotales} pts / ${equipo.pjPromediosTotales} PJ`
+                              `${equipo.pjPromediosTotales} PJ`
+                            ),
+                            h('div', { className: 'tabla-info text-xs text-gray-600' },
+                              `${equipo.puntosPromediosTotales} pts`
                             )
                           )
                         ),
