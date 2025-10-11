@@ -108,6 +108,8 @@
     const { createElement: h } = React;
 
     function App() {
+      const [modoCalculo, setModoCalculo] = React.useState('aproximado'); // 'seguro' o 'aproximado'
+
       const equiposIniciales = [
         {
           id: 'GIM',
@@ -312,121 +314,35 @@
           // Determinar cuántos equipos descienden
           const cantidadDescienden = descendidoPorPromedios.id === descendidoPorTabla.id ? 2 : 2;
 
-          // Para cada equipo, calcular el peor escenario posible
-          // donde todos los demás maximizan sus puntos
+          let puntosNecesarios = 0;
 
-          // Identificar todos los partidos directos pendientes
-          const partidosDirectosPendientes = [];
-          porTabla.forEach(eq => {
-            eq.partidos.forEach(partido => {
-              const resultado = resultados[partido.partidoId];
-              if (!resultado && partido.rivalId) {
-                const rivalEstaEnLista = porTabla.some(e => e.id === partido.rivalId);
-                if (rivalEstaEnLista && !partidosDirectosPendientes.some(p => p.id === partido.partidoId)) {
-                  partidosDirectosPendientes.push({
-                    id: partido.partidoId,
-                    equipo1: eq.id,
-                    equipo2: partido.rivalId
-                  });
-                }
-              }
-            });
-          });
-
-          // Calcular puntos máximos para cada equipo en el peor escenario para equipoActual
-          const puntosMaximosEquipos = porTabla.map(equipo => {
-            let puntosMax = equipo.puntosTemporada;
-            let partidosContados = [];
-
-            equipo.partidos.forEach(partido => {
-              const resultado = resultados[partido.partidoId];
-              if (!resultado) { // Solo partidos pendientes
-                const esPartidoDirecto = partido.rivalId && porTabla.some(e => e.id === partido.rivalId);
-
-                if (esPartidoDirecto) {
-                  // Es un partido directo
-                  if (equipo.id === equipoActual.id) {
-                    // El equipo actual pierde todos sus partidos (peor caso)
-                    puntosMax += 0;
-                  } else if (partido.rivalId === equipoActual.id) {
-                    // Juega contra el equipo actual, asumimos que gana
-                    puntosMax += 3;
-                  } else {
-                    // Partido directo entre otros dos equipos
-                    // Para el peor escenario del equipoActual, este equipo gana
-                    puntosMax += 3;
-                  }
-                } else {
-                  // Partido contra equipo externo, asumimos que gana
-                  puntosMax += 3;
-                }
-              }
-            });
-
-            return {
+          if (modoCalculo === 'seguro') {
+            // MODO SEGURO: Calcular puntos para salvarse sin depender de nadie
+            // Asume que todos ganan todos sus partidos restantes
+            const equiposConMaximos = porTabla.map(equipo => ({
               id: equipo.id,
               puntosActuales: equipo.puntosTemporada,
-              puntosMaximos: puntosMax
-            };
-          });
+              puntosMaximos: equipo.puntosTemporada + (equipo.partidosRestantes * 3)
+            }));
 
-          // Ahora ajustamos por partidos directos entre otros equipos
-          // Si hay un partido directo entre equipos A y B (no es equipoActual),
-          // ambos no pueden ganar, entonces restamos 3 puntos al que tenga menos
-          partidosDirectosPendientes.forEach(pd => {
-            if (pd.equipo1 !== equipoActual.id && pd.equipo2 !== equipoActual.id) {
-              // Es un partido entre otros dos equipos
-              const eq1 = puntosMaximosEquipos.find(e => e.id === pd.equipo1);
-              const eq2 = puntosMaximosEquipos.find(e => e.id === pd.equipo2);
+            const ordenadosPorMax = [...equiposConMaximos].sort((a, b) => b.puntosMaximos - a.puntosMaximos);
+            const posicionSegura = ordenadosPorMax.length - cantidadDescienden;
+            const equiposZonaDescenso = ordenadosPorMax.slice(posicionSegura);
+            const rivalesEnDescenso = equiposZonaDescenso.filter(e => e.id !== equipoActual.id);
 
-              // En el peor caso para equipoActual, el que tiene menos puntos actuales pierde
-              // (para maximizar la diferencia con equipoActual)
-              if (eq1 && eq2) {
-                if (eq1.puntosActuales <= eq2.puntosActuales) {
-                  eq1.puntosMaximos -= 3; // Este equipo pierde el partido directo
-                } else {
-                  eq2.puntosMaximos -= 3; // Este equipo pierde el partido directo
-                }
-              }
+            if (rivalesEnDescenso.length > 0) {
+              const mejorRival = rivalesEnDescenso.reduce((max, e) =>
+                e.puntosMaximos > max.puntosMaximos ? e : max
+              );
+              puntosNecesarios = Math.max(0, mejorRival.puntosMaximos + 1 - equipoActual.puntosTemporada);
             }
-          });
+          } else {
+            // MODO APROXIMADO: Objetivo histórico simplificado
+            // Históricamente en Argentina se salva con ~31 puntos
+            const objetivoSalvacion = 31;
 
-          // Ordenar por puntos máximos
-          const ordenadosPorMax = [...puntosMaximosEquipos].sort((a, b) => b.puntosMaximos - a.puntosMaximos);
-
-          // Para salvarse, necesita estar fuera de las últimas (cantidadDescienden) posiciones
-          // incluso en el peor escenario
-
-          // Encontrar el equipo que estaría en la posición cantidadDescienden desde abajo
-          // (el último que NO desciende)
-          const posicionSalvacion = ordenadosPorMax.length - cantidadDescienden;
-
-          if (posicionSalvacion <= 0) {
-            // No hay suficientes equipos, todos en riesgo
-            return {
-              ...equipoActual,
-              puntosNecesarios: 999
-            };
+            puntosNecesarios = Math.max(0, objetivoSalvacion - equipoActual.puntosTemporada);
           }
-
-          // El equipo necesita tener más puntos que el máximo del equipo en posición de descenso
-          const equiposDescenso = ordenadosPorMax.slice(posicionSalvacion);
-          const equiposDescensoSinActual = equiposDescenso.filter(e => e.id !== equipoActual.id);
-
-          if (equiposDescensoSinActual.length === 0) {
-            // Está en zona segura
-            return {
-              ...equipoActual,
-              puntosNecesarios: 0
-            };
-          }
-
-          // Necesita superar al mejor de los equipos en zona de descenso (excluyéndose a sí mismo)
-          const mejorEnDescenso = equiposDescensoSinActual.reduce((max, e) =>
-            e.puntosMaximos > max.puntosMaximos ? e : max
-          );
-
-          const puntosNecesarios = Math.max(0, mejorEnDescenso.puntosMaximos + 1 - equipoActual.puntosTemporada);
 
           return {
             ...equipoActual,
@@ -442,7 +358,7 @@
           hayEmpateTabla: hayEmpate,
           equiposEmpatadosTabla: hayEmpate ? equiposEmpatados : []
         };
-      }, [resultados]);
+      }, [resultados, modoCalculo]);
 
       const handleResultado = (partidoId, ganadorId, esLocal, esEmpate = false) => {
         setResultados(prev => {
@@ -505,14 +421,28 @@
                   'ZorritoFassi'
                 )
               ),
-              h('button', {
-                onClick: resetearTodo,
-                className: 'btn-reset px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold shadow-md'
-              }, 'Resetear Simulación')
+              h('div', { className: 'flex gap-2' },
+                h('button', {
+                  onClick: () => setModoCalculo(modoCalculo === 'seguro' ? 'aproximado' : 'seguro'),
+                  className: 'btn-reset px-3 md:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold shadow-md text-xs md:text-sm'
+                }, modoCalculo === 'seguro' ? 'Modo: Seguro' : 'Modo: Aproximado'),
+                h('button', {
+                  onClick: resetearTodo,
+                  className: 'btn-reset px-4 md:px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold shadow-md text-xs md:text-sm'
+                }, 'Resetear Simulación')
+              )
             ),
             h('div', { className: 'regla-descenso bg-blue-50 border-l-4 border-blue-500 p-2 md:p-3 text-sm mb-2 md:mb-3' },
-              h('strong', null, 'Descienden 2 equipos: '),
-              ' el último por promedios y el último por tabla anual. Si coinciden, desciende también el penúltimo de la tabla. Si hay empate en puntos en zona de descenso, se define por partido definitorio.'
+              h('div', null,
+                h('strong', null, 'Descienden 2 equipos: '),
+                ' el último por promedios y el último por tabla anual. Si coinciden, desciende también el penúltimo de la tabla. Si hay empate en puntos en zona de descenso, se define por partido definitorio.'
+              ),
+              h('div', { className: 'mt-2 text-xs' },
+                h('strong', null, modoCalculo === 'seguro' ? 'Modo Seguro: ' : 'Modo Aproximado: '),
+                modoCalculo === 'seguro'
+                  ? 'Puntos necesarios para salvarse sin depender de nadie (todos ganan todo).'
+                  : 'Puntos aproximados basados en histórico de salvación (~31 puntos).'
+              )
             ),
             calcularTabla.hayEmpateTabla && h('div', { className: 'regla-descenso bg-orange-50 border-l-4 border-orange-500 p-2 md:p-3 text-sm' },
               h('strong', null, '⚠️ Partido Definitorio: '),
