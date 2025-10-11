@@ -254,6 +254,7 @@
           pjPromedios: 28,
           puntosPromedios: 23,
           partidos: [
+            { rival: 'San Lorenzo', rivalId: null, condicion: 'V', fecha: 28, partidoId: 'SMA-SLO-28', jugado: true },
             { rival: 'Independiente', rivalId: null, condicion: 'L', fecha: 29, partidoId: 'SMA-IND-29' },
             { rival: 'Godoy Cruz', rivalId: 'GOD', condicion: 'V', fecha: 30, partidoId: 'GOD-SMA-30' },
             { rival: 'Lanús', rivalId: null, condicion: 'L', fecha: 31, partidoId: 'SMA-LAN-31' },
@@ -279,7 +280,8 @@
 
       const [resultados, setResultados] = useState({
         'GIM-TAL-28': 'TAL', // Talleres ganó a Gimnasia
-        'BAN-RAC-28': 'EXT'  // Racing ganó a Banfield
+        'BAN-RAC-28': 'EXT', // Racing ganó a Banfield
+        'SMA-SLO-28': 'SMA'  // San Martín ganó a San Lorenzo
       });
 
       const calcularTabla = useMemo(() => {
@@ -483,7 +485,8 @@
       const resetearTodo = () => {
         setResultados({
           'GIM-TAL-28': 'TAL', // Mantener el partido Talleres vs Gimnasia
-          'BAN-RAC-28': 'EXT'  // Mantener el partido Racing vs Banfield
+          'BAN-RAC-28': 'EXT', // Mantener el partido Racing vs Banfield
+          'SMA-SLO-28': 'SMA'  // Mantener el partido San Martín vs San Lorenzo
         });
       };
 
