@@ -264,12 +264,12 @@
         {
           id: 'ALD',
           nombre: 'Aldosivi',
-          pj: 27,
-          puntos: 21,
-          pjPromedios: 27,
-          puntosPromedios: 21,
+          pj: 28,
+          puntos: 24,
+          pjPromedios: 28,
+          puntosPromedios: 24,
           partidos: [
-            { rival: 'Huracán', rivalId: null, condicion: 'L', fecha: 28, partidoId: 'ALD-HUR-28' },
+            { rival: 'Huracán', rivalId: null, condicion: 'L', fecha: 28, partidoId: 'ALD-HUR-28', jugado: true },
             { rival: 'Racing', rivalId: null, condicion: 'V', fecha: 29, partidoId: 'ALD-RAC-29' },
             { rival: 'Indep. Rivadavia', rivalId: null, condicion: 'L', fecha: 30, partidoId: 'ALD-IRV-30' },
             { rival: 'Banfield', rivalId: 'BAN', condicion: 'V', fecha: 31, partidoId: 'BAN-ALD-31' },
@@ -281,7 +281,8 @@
       const [resultados, setResultados] = useState({
         'GIM-TAL-28': 'TAL', // Talleres ganó a Gimnasia
         'BAN-RAC-28': 'EXT', // Racing ganó a Banfield
-        'SMA-SLO-28': 'SMA'  // San Martín ganó a San Lorenzo
+        'SMA-SLO-28': 'SMA', // San Martín ganó a San Lorenzo
+        'ALD-HUR-28': 'ALD'  // Aldosivi ganó a Huracán
       });
 
       const calcularTabla = useMemo(() => {
@@ -335,29 +336,36 @@
         let hayDefinitorioPorTabla = false;
         let equiposDefinitorioPorTabla = [];
         
+        // Si el último por promedios también es último por tabla
         if (descendidoPorPromedios.id === ultimoPorTabla.id) {
+          // Desciende por promedios, y buscamos el penúltimo por tabla
           const penultimoPorTabla = porTabla[porTabla.length - 2];
+          descendidoPorTabla = penultimoPorTabla;
           
+          // Solo hay definitorio si hay empate en la posición del penúltimo
           const puntajePenultimo = penultimoPorTabla.puntosTemporada;
-          const equiposConMismoPuntaje = porTabla.filter(e => e.puntosTemporada === puntajePenultimo);
+          const equiposConMismoPuntaje = porTabla.filter(e => 
+            e.puntosTemporada === puntajePenultimo && e.id !== descendidoPorPromedios.id
+          );
           
           if (equiposConMismoPuntaje.length > 1) {
             hayDefinitorioPorTabla = true;
             equiposDefinitorioPorTabla = equiposConMismoPuntaje.map(e => e.id);
-            descendidoPorTabla = penultimoPorTabla;
-          } else {
-            descendidoPorTabla = penultimoPorTabla;
           }
         } else {
+          // El último por promedios NO es el último por tabla
+          // Entonces el último por tabla desciende
+          descendidoPorTabla = ultimoPorTabla;
+          
+          // Solo hay definitorio si hay empate en puntos en la última posición
           const puntajeUltimo = ultimoPorTabla.puntosTemporada;
-          const equiposConMismoPuntaje = porTabla.filter(e => e.puntosTemporada === puntajeUltimo);
+          const equiposConMismoPuntaje = porTabla.filter(e => 
+            e.puntosTemporada === puntajeUltimo && e.id !== descendidoPorPromedios.id
+          );
           
           if (equiposConMismoPuntaje.length > 1) {
             hayDefinitorioPorTabla = true;
             equiposDefinitorioPorTabla = equiposConMismoPuntaje.map(e => e.id);
-            descendidoPorTabla = ultimoPorTabla;
-          } else {
-            descendidoPorTabla = ultimoPorTabla;
           }
         }
 
@@ -366,30 +374,14 @@
           equiposQueDescienden.push(descendidoPorTabla.id);
         }
 
+        // El empate en tabla solo aplica si realmente hay definitorio por tabla
         let equiposEmpatados = [];
-        let hayEmpate = false;
-
+        let hayEmpate = hayDefinitorioPorTabla;
         if (hayDefinitorioPorTabla) {
           equiposEmpatados = equiposDefinitorioPorTabla;
-          hayEmpate = true;
-        } else {
-          const puntosDescendidos = equiposQueDescienden.map(id => {
-            const equipo = porTabla.find(e => e.id === id);
-            return equipo ? equipo.puntosTemporada : 0;
-          });
-
-          const puntajeMasAltoDescendidos = Math.max(...puntosDescendidos);
-
-          const equiposConMismoPuntaje = porTabla.filter(e => 
-            e.puntosTemporada === puntajeMasAltoDescendidos
-          );
-
-          if (equiposConMismoPuntaje.length > equiposQueDescienden.length) {
-            equiposEmpatados = equiposConMismoPuntaje.map(e => e.id);
-            hayEmpate = true;
-          }
         }
 
+        // Empate en promedios: solo si hay empate Y uno de ellos no es también último por tabla
         let equiposEmpatadosPromedios = [];
         let hayEmpatePromedios = false;
 
@@ -401,15 +393,11 @@
           const promedioPenultimo = parseFloat(penultimoPromedio.promedio.toFixed(3));
 
           if (promedioUltimo === promedioPenultimo) {
-            const ultimoEnTabla = porTabla.find(e => e.id === ultimoPromedio.id);
-            const penultimoEnTabla = porTabla.find(e => e.id === penultimoPromedio.id);
+            // Si el último por promedios TAMBIÉN es último por tabla, desciende directamente
+            // No hay partido definitorio por promedios
+            const ultimoEsTambienUltimoPorTabla = ultimoPromedio.id === ultimoPorTabla.id;
 
-            const mismosPuntos = ultimoEnTabla && penultimoEnTabla &&
-                                ultimoEnTabla.puntosTemporada === penultimoEnTabla.puntosTemporada;
-
-            const ultimoEsTambienUltimoPorTabla = ultimoPromedio.id === descendidoPorTabla.id;
-
-            if (!mismosPuntos && !ultimoEsTambienUltimoPorTabla) {
+            if (!ultimoEsTambienUltimoPorTabla) {
               equiposEmpatadosPromedios = porPromedios
                 .filter(e => parseFloat(e.promedio.toFixed(3)) === promedioUltimo)
                 .map(e => e.id);
@@ -486,7 +474,8 @@
         setResultados({
           'GIM-TAL-28': 'TAL', // Mantener el partido Talleres vs Gimnasia
           'BAN-RAC-28': 'EXT', // Mantener el partido Racing vs Banfield
-          'SMA-SLO-28': 'SMA'  // Mantener el partido San Martín vs San Lorenzo
+          'SMA-SLO-28': 'SMA', // Mantener el partido San Martín vs San Lorenzo
+          'ALD-HUR-28': 'ALD'  // Mantener el partido Aldosivi vs Huracán
         });
       };
 
