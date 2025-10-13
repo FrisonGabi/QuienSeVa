@@ -17,7 +17,7 @@
   <meta property="og:url" content="https://quienseva.netlify.app">
   <meta property="og:title" content="¿Quién Se Va? - Simulador de Descenso Fútbol Argentino">
   <meta property="og:description" content="Simulador interactivo de descenso del fútbol argentino. Calcula qué equipos descienden según tabla anual y promedios.">
-  <meta property="og:image" content="https://quienseva.netlify.app/og-image.png">
+  <meta property="og:image" content="https://quienseva.netlify.app/img/og-image.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Quién Se Va - Simulador de Descenso">
@@ -29,13 +29,13 @@
   <meta property="twitter:url" content="https://quienseva.netlify.app">
   <meta property="twitter:title" content="¿Quién Se Va? - Simulador de Descenso Fútbol Argentino">
   <meta property="twitter:description" content="Simulador interactivo de descenso del fútbol argentino. Calcula qué equipos descienden según tabla anual y promedios.">
-  <meta property="twitter:image" content="https://quienseva.netlify.app/og-image.png">
+  <meta property="twitter:image" content="https://quienseva.netlify.app/img/og-image.png">
   <meta property="twitter:image:alt" content="Quién Se Va - Simulador de Descenso">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="apple-touch-icon" href="favicon.png">
-  <link rel="shortcut icon" type="image/png" href="favicon.png">
+  <link rel="icon" type="image/png" href="img/favicon.png">
+  <link rel="apple-touch-icon" href="img/favicon.png">
+  <link rel="shortcut icon" type="image/png" href="img/favicon.png">
 
   <!-- Theme Color -->
   <meta name="theme-color" content="#0f172a">
@@ -103,9 +103,6 @@
       .tabla-nombre {
         font-size: 0.75rem !important;
       }
-      .tabla-puntos {
-        font-size: 1rem !important;
-      }
       .tabla-promedio {
         font-size: 1rem !important;
       }
@@ -140,6 +137,18 @@
         padding: 0.5rem !important;
       }
     }
+
+    @media (max-width: 417px) {
+      .hide-pos-mobile .tabla-posicion {
+        display: none !important;
+      }
+    }
+
+    @media (max-width: 369px) {
+      .hide-pos-mobile img[alt] {
+        display: none !important;
+      }
+    }
     .donation-content {
       display: flex;
       align-items: center;
@@ -166,6 +175,7 @@
       display: flex;
       flex-direction: column;
       gap: 0.25rem;
+      align-items: flex-start;
     }
 
     .donation-title {
@@ -246,7 +256,7 @@
 
     function App() {
       const [modoCalculo, setModoCalculo] = React.useState('aproximado'); // 'seguro' o 'aproximado'
-      const [mostrarPromedios, setMostrarPromedios] = React.useState(true);
+      const [mostrarPromedios, setMostrarPromedios] = React.useState(false);
       const [esMobile, setEsMobile] = React.useState(window.innerWidth <= 768);
 
       React.useEffect(() => {
@@ -261,6 +271,7 @@
         {
           id: 'GIM',
           nombre: 'Gimnasia',
+          escudo: 'img/clubes/gimnasia.png',
           pj: 28,
           puntos: 29,
           pjPromedios: 110,
@@ -276,6 +287,7 @@
         {
           id: 'BAN',
           nombre: 'Banfield',
+          escudo: 'img/clubes/banfield.png',
           pj: 28,
           puntos: 28,
           pjPromedios: 110,
@@ -291,6 +303,7 @@
         {
           id: 'SAR',
           nombre: 'Sarmiento',
+          escudo: 'img/clubes/sarmiento.png',
           pj: 27,
           puntos: 30,
           pjPromedios: 109,
@@ -307,6 +320,7 @@
         {
           id: 'TAL',
           nombre: 'Talleres',
+          escudo: 'img/clubes/talleres.png',
           pj: 28,
           puntos: 27,
           pjPromedios: 110,
@@ -322,6 +336,7 @@
         {
           id: 'GOD',
           nombre: 'Godoy Cruz',
+          escudo: 'img/clubes/godoycruz.png',
           pj: 28,
           puntos: 27,
           pjPromedios: 110,
@@ -337,6 +352,7 @@
         {
           id: 'SMA',
           nombre: 'San Martín',
+          escudo: 'img/clubes/sanmartin.png',
           pj: 28,
           puntos: 23,
           pjPromedios: 28,
@@ -352,6 +368,7 @@
         {
           id: 'ALD',
           nombre: 'Aldosivi',
+          escudo: 'img/clubes/aldosivi.png',
           pj: 28,
           puntos: 24,
           pjPromedios: 28,
@@ -367,6 +384,7 @@
         {
           id: 'NEW',
           nombre: 'Newell\'s',
+          escudo: 'img/clubes/newells.png',
           pj: 28,
           puntos: 30,
           pjPromedios: 110,
@@ -760,7 +778,7 @@
             h('div', { className: 'flex items-center justify-between mb-3 md:mb-4' },
               h('div', { className: 'flex items-center gap-2 md:gap-3' },
                 h('img', {
-                  src: 'favicon.png',
+                  src: 'img/favicon.png',
                   alt: '¿Quién Se Va?',
                   className: 'h-40 md:h-16 w-auto'
                 }),
@@ -809,7 +827,7 @@
               h('div', { className: 'donation-content' },
                 h('div', { className: 'qr-container' },
                   h('img', {
-                    src: 'QR.jpg',
+                    src: 'img/QR.jpg',
                     alt: 'QR para donaciones',
                     loading: 'lazy'
                   })
@@ -820,7 +838,13 @@
                   h('div', { className: 'alias-container' },
                     h('span', { className: 'alias-label' }, 'Alias: '),
                     h('span', { className: 'alias-value' }, 'GFRISON')
-                  )
+                  ),
+                  h('a', {
+                    href: 'https://link.mercadopago.com.ar/quiensevaapp',
+                    target: '_blank',
+                    rel: 'noopener noreferrer',
+                    className: 'text-blue-600 hover:text-blue-800 underline text-sm font-medium inline'
+                  }, 'Link Mercado Pago')
                 )
               )
             ),
@@ -834,7 +858,7 @@
             )
           ),
           h('div', { className: 'grid grid-cols-1 gap-4', id: 'captura-container' },
-            h('div', { className: `grid ${esMobile && !mostrarPromedios ? 'grid-cols-1' : 'grid-cols-2 md:grid-cols-2'} gap-1 md:gap-4` },
+            h('div', { className: `grid ${esMobile && !mostrarPromedios ? 'grid-cols-1' : 'grid-cols-2 md:grid-cols-2'} gap-1 md:gap-4 ${esMobile && mostrarPromedios ? 'hide-pos-mobile' : ''}` },
               h('div', { className: 'bg-white rounded-lg shadow-xl p-2 md:p-4' },
                 h('h2', { className: 'titulo-tabla text-xl font-bold mb-2 md:mb-3 text-gray-800' }, 'Tabla Anual'),
                 h('div', { className: 'space-y-1 md:space-y-1.5' },
@@ -847,8 +871,13 @@
                       key: equipo.id,
                       className: `p-1.5 md:p-2.5 rounded flex items-center justify-between min-h-[70px] md:min-h-[80px] ${empate ? 'bg-orange-100 border-2 border-orange-400' : descendido ? 'bg-red-100 border-2 border-red-400' : 'bg-green-50'}`
                     },
-                      h('div', { className: 'flex items-center md:gap-2' },
+                      h('div', { className: 'flex items-center gap-1 md:gap-2' },
                         h('span', { className: 'tabla-posicion font-bold text-lg text-gray-700 w-5 md:w-6' }, idx + 1),
+                        h('img', {
+                          src: equipo.escudo,
+                          alt: equipo.nombre,
+                          className: 'w-8 h-8 md:w-10 md:h-10 object-contain mr-1'
+                        }),
                         h('div', null,
                           h('div', { className: 'flex items-center gap-1 md:gap-2' },
                             h('span', { className: 'tabla-nombre font-bold text-base' }, equipo.nombre),
@@ -868,7 +897,13 @@
                         )
                       ),
                       h('div', { className: 'text-right' },
-                        h('div', { className: 'tabla-puntos text-2xl font-bold text-green-700' }, equipo.puntosTemporada),
+                        h('div', { className: 'flex items-center gap-1 md:gap-3 justify-end' },
+                          h('div', { className: `tabla-puntos ${esMobile && !mostrarPromedios ? 'text-2xl' : 'text-2xl'} font-bold text-green-700` }, equipo.puntosTemporada),
+                          (esMobile && !mostrarPromedios) && h('span', { className: 'text-xl font-bold text-gray-400' }, '|'),
+                          (esMobile && !mostrarPromedios) && h('div', { className: 'tabla-promedio text-xl font-bold text-blue-700' },
+                            equipo.promedio.toFixed(3)
+                          )
+                        ),
                         descendido && !empate && h('div', { className: 'tabla-info text-xs font-semibold text-red-600 flex items-center gap-0.5 justify-end' },
                           h(TrendingDown, { size: 10, className: 'md:w-3 md:h-3' }),
                           tipo === 'Ambos' ? 'Prom+Tabla' : tipo === 'Promedios' ? 'Prom' : 'Tabla'
@@ -890,8 +925,13 @@
                       className: `p-1.5 md:p-2.5 rounded min-h-[70px] md:min-h-[80px] ${empatePromedios ? 'bg-orange-100 border-2 border-orange-400' : esUltimo ? 'bg-red-100 border-2 border-red-400' : 'bg-blue-50'}`
                     },
                       h('div', { className: 'flex items-center justify-between' },
-                        h('div', { className: 'flex items-center md:gap-2' },
+                        h('div', { className: 'flex items-center gap-1 md:gap-2' },
                           h('span', { className: 'tabla-posicion font-bold text-lg text-gray-700 w-5 md:w-6' }, idx + 1),
+                          h('img', {
+                            src: equipo.escudo,
+                            alt: equipo.nombre,
+                            className: 'w-8 h-8 md:w-10 md:h-10 object-contain'
+                          }),
                           h('div', null,
                             h('div', { className: 'flex items-center gap-1 md:gap-2' },
                               h('span', { className: 'tabla-nombre font-bold text-base' }, equipo.nombre),
@@ -927,7 +967,14 @@
               h('div', { className: 'grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-3' },
                 equiposIniciales.map(equipo =>
                   h('div', { key: equipo.id, className: 'border-2 border-gray-200 rounded-lg p-2 md:p-3' },
-                    h('h3', { className: 'equipo-titulo font-bold text-base mb-1.5 md:mb-2 text-gray-800' }, equipo.nombre),
+                    h('div', { className: 'flex items-center gap-2 mb-1.5 md:mb-2' },
+                      h('img', {
+                        src: equipo.escudo,
+                        alt: equipo.nombre,
+                        className: 'w-6 h-6 md:w-7 md:h-7 object-contain'
+                      }),
+                      h('h3', { className: 'equipo-titulo font-bold text-base text-gray-800' }, equipo.nombre)
+                    ),
                     h('div', { className: 'space-y-1 md:space-y-1.5' },
                       equipo.partidos.map((partido, idx) => {
                         const esLocal = partido.condicion === 'L';
