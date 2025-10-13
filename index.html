@@ -275,6 +275,21 @@
             { rival: 'Banfield', rivalId: 'BAN', condicion: 'V', fecha: 31, partidoId: 'BAN-ALD-31' },
             { rival: 'San Martín', rivalId: 'SMA', condicion: 'L', fecha: 32, partidoId: 'ALD-SMA-32' }
           ]
+        },
+        {
+          id: 'NEW',
+          nombre: 'Newell\'s',
+          pj: 28,
+          puntos: 30,
+          pjPromedios: 110,
+          puntosPromedios: 132,
+          partidos: [
+            { rival: 'Tigre', rivalId: null, condicion: 'V', fecha: 28, partidoId: 'NEW-TIG-28', jugado: true },
+            { rival: 'Argentinos Jrs', rivalId: null, condicion: 'V', fecha: 29, partidoId: 'NEW-ARG-29' },
+            { rival: 'Unión', rivalId: null, condicion: 'L', fecha: 30, partidoId: 'NEW-UNI-30' },
+            { rival: 'Huracán', rivalId: null, condicion: 'V', fecha: 31, partidoId: 'NEW-HUR-31' },
+            { rival: 'Racing', rivalId: null, condicion: 'L', fecha: 32, partidoId: 'NEW-RAC-32' }
+          ]
         }
       ];
 
@@ -284,7 +299,8 @@
         'SMA-SLO-28': 'SMA', // San Martín ganó a San Lorenzo
         'ALD-HUR-28': 'ALD', // Aldosivi ganó a Huracán
         'GOD-IRV-28': 'E',   // Godoy Cruz empató con Indep. Rivadavia
-        'SAR-RIV-28': 'SAR'  // Sarmiento ganó a River
+        'SAR-RIV-28': 'SAR', // Sarmiento ganó a River
+        'NEW-TIG-28': 'E'    // Newell's empató con Tigre
       });
 
       const calcularTabla = useMemo(() => {
@@ -479,7 +495,8 @@
           'SMA-SLO-28': 'SMA', // Mantener el partido San Martín vs San Lorenzo
           'ALD-HUR-28': 'ALD', // Mantener el partido Aldosivi vs Huracán
           'GOD-IRV-28': 'E',   // Mantener el partido Godoy Cruz vs Indep. Rivadavia
-          'SAR-RIV-28': 'SAR'  // Mantener el partido Sarmiento vs River
+          'SAR-RIV-28': 'SAR', // Mantener el partido Sarmiento vs River
+          'NEW-TIG-28': 'E'    // Mantener el partido Newell's vs Tigre
         });
       };
 
