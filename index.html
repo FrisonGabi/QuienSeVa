@@ -375,7 +375,7 @@
           puntosPromedios: 24,
           partidos: [
             { rival: 'Huracán', rivalId: null, condicion: 'L', fecha: 28, partidoId: 'ALD-HUR-28', jugado: true },
-            { rival: 'Racing', rivalId: null, condicion: 'V', fecha: 29, partidoId: 'ALD-RAC-29' },
+            { rival: 'Racing', rivalId: null, condicion: 'V', fecha: 29, partidoId: 'ALD-RAC-29', jugado: true },
             { rival: 'Indep. Rivadavia', rivalId: null, condicion: 'L', fecha: 30, partidoId: 'ALD-IRV-30' },
             { rival: 'Banfield', rivalId: 'BAN', condicion: 'V', fecha: 31, partidoId: 'BAN-ALD-31' },
             { rival: 'San Martín', rivalId: 'SMA', condicion: 'L', fecha: 32, partidoId: 'ALD-SMA-32' }
@@ -406,7 +406,8 @@
         'ALD-HUR-28': 'ALD', // Aldosivi ganó a Huracán
         'GOD-IRV-28': 'E',   // Godoy Cruz empató con Indep. Rivadavia
         'SAR-RIV-28': 'SAR', // Sarmiento ganó a River
-        'NEW-TIG-28': 'E'    // Newell's empató con Tigre
+        'NEW-TIG-28': 'E',   // Newell's empató con Tigre
+        'ALD-RAC-29': 'EXT'  // Aldosivi perdió contra Racing
       });
 
       const calcularTabla = useMemo(() => {
@@ -613,7 +614,8 @@
           'ALD-HUR-28': 'ALD', // Mantener el partido Aldosivi vs Huracán
           'GOD-IRV-28': 'E',   // Mantener el partido Godoy Cruz vs Indep. Rivadavia
           'SAR-RIV-28': 'SAR', // Mantener el partido Sarmiento vs River
-          'NEW-TIG-28': 'E'    // Mantener el partido Newell's vs Tigre
+          'NEW-TIG-28': 'E',   // Mantener el partido Newell's vs Tigre
+          'ALD-RAC-29': 'EXT'  // Mantener el partido Aldosivi vs Racing
         });
       };
 
