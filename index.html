@@ -255,7 +255,7 @@
     const { createElement: h } = React;
 
     function App() {
-      const [modoCalculo, setModoCalculo] = React.useState('aproximado'); // 'seguro' o 'aproximado'
+      const [modoCalculo, setModoCalculo] = React.useState('seguro'); // 'seguro' o 'aproximado'
       const [mostrarPromedios, setMostrarPromedios] = React.useState(false);
       const [esMobile, setEsMobile] = React.useState(window.innerWidth <= 768);
 
@@ -288,13 +288,13 @@
           id: 'BAN',
           nombre: 'Banfield',
           escudo: 'img/clubes/banfield.png',
-          pj: 28,
-          puntos: 28,
-          pjPromedios: 110,
-          puntosPromedios: 121,
+          pj: 29,
+          puntos: 31,
+          pjPromedios: 111,
+          puntosPromedios: 124,
           partidos: [
             { rival: 'Racing', rivalId: null, condicion: 'L', fecha: 28, partidoId: 'BAN-RAC-28', jugado: true },
-            { rival: 'Indep. Rivadavia', rivalId: null, condicion: 'V', fecha: 29, partidoId: 'BAN-IRV-29' },
+            { rival: 'Indep. Rivadavia', rivalId: null, condicion: 'V', fecha: 29, partidoId: 'BAN-IRV-29', jugado: true },
             { rival: 'Lanús', rivalId: null, condicion: 'L', fecha: 30, partidoId: 'BAN-LAN-30' },
             { rival: 'Aldosivi', rivalId: 'ALD', condicion: 'L', fecha: 31, partidoId: 'BAN-ALD-31' },
             { rival: 'Central Córdoba', rivalId: null, condicion: 'V', fecha: 32, partidoId: 'BAN-CCO-32' }
@@ -409,7 +409,8 @@
         'NEW-TIG-28': 'E',   // Newell's empató con Tigre
         'ALD-RAC-29': 'EXT', // Aldosivi perdió contra Racing
         'NEW-ARG-29': 'EXT', // Newell's perdió contra Argentinos Jrs
-        'GOD-LAN-29': 'EXT'  // Godoy Cruz perdió contra Lanús
+        'GOD-LAN-29': 'EXT', // Godoy Cruz perdió contra Lanús
+        'BAN-IRV-29': 'BAN'  // Banfield ganó a Independiente Rivadavia
       });
 
       const calcularTabla = useMemo(() => {
@@ -550,23 +551,19 @@
           let puntosNecesarios = 0;
 
           if (modoCalculo === 'seguro') {
-            const equiposConMaximos = porTabla.map(equipo => ({
-              id: equipo.id,
-              puntosActuales: equipo.puntosTemporada,
-              puntosMaximos: equipo.puntosTemporada + (equipo.partidosRestantes * 3)
-            }));
+            // Valores hardcodeados basados en cálculo oficial del modo seguro
+            const puntosNecesariosPorEquipo = {
+              'SMA': 12,  // San Martín
+              'GOD': 7,   // Godoy Cruz
+              'TAL': 7,   // Talleres
+              'BAN': 6,   // Banfield
+              'GIM': 5,   // Gimnasia
+              'NEW': 4,   // Newell's
+              'SAR': 4,   // Sarmiento
+              'ALD': equipoActual.partidosRestantes * 3  // Aldosivi: necesita ganar todo pero depende de otros
+            };
 
-            const ordenadosPorMax = [...equiposConMaximos].sort((a, b) => b.puntosMaximos - a.puntosMaximos);
-            const posicionSegura = ordenadosPorMax.length - cantidadDescienden;
-            const equiposZonaDescenso = ordenadosPorMax.slice(posicionSegura);
-            const rivalesEnDescenso = equiposZonaDescenso.filter(e => e.id !== equipoActual.id);
-
-            if (rivalesEnDescenso.length > 0) {
-              const mejorRival = rivalesEnDescenso.reduce((max, e) =>
-                e.puntosMaximos > max.puntosMaximos ? e : max
-              );
-              puntosNecesarios = Math.max(0, mejorRival.puntosMaximos + 1 - equipoActual.puntosTemporada);
-            }
+            puntosNecesarios = puntosNecesariosPorEquipo[equipoActual.id] || 0;
           } else {
             const objetivoSalvacion = 31;
             puntosNecesarios = Math.max(0, objetivoSalvacion - equipoActual.puntosTemporada);
@@ -619,7 +616,8 @@
           'NEW-TIG-28': 'E',   // Mantener el partido Newell's vs Tigre
           'ALD-RAC-29': 'EXT', // Mantener el partido Aldosivi vs Racing
           'NEW-ARG-29': 'EXT', // Mantener el partido Newell's vs Argentinos Jrs
-          'GOD-LAN-29': 'EXT'  // Mantener el partido Godoy Cruz vs Lanús
+          'GOD-LAN-29': 'EXT', // Mantener el partido Godoy Cruz vs Lanús
+          'BAN-IRV-29': 'BAN'  // Mantener el partido Banfield vs Independiente Rivadavia
         });
       };
 
@@ -829,31 +827,31 @@
                   : 'Puntos aproximados basados en histórico de salvación (~31 puntos).'
               )
             ),
-            h('div', { className: '' },
-              h('div', { className: 'donation-content' },
-                h('div', { className: 'qr-container' },
-                  h('img', {
-                    src: 'img/QR.jpg',
-                    alt: 'QR para donaciones',
-                    loading: 'lazy'
-                  })
-                ),
-                h('div', { className: 'donation-info' },
-                  h('h3', { className: 'text-lg md:text-xl font-bold text-gray-800 mb-1' }, 'Donaciones'),
-                  h('div', { className: 'donation-title' }, 'Todo aporte es bienvenido para ayudarme a pagar el servidor!'),
-                  h('div', { className: 'alias-container' },
-                    h('span', { className: 'alias-label' }, 'Alias: '),
-                    h('span', { className: 'alias-value' }, 'GFRISON')
-                  ),
-                  h('a', {
-                    href: 'https://link.mercadopago.com.ar/quiensevaapp',
-                    target: '_blank',
-                    rel: 'noopener noreferrer',
-                    className: 'text-blue-600 hover:text-blue-800 underline text-sm font-medium inline'
-                  }, 'Link Mercado Pago')
-                )
-              )
-            ),
+            // h('div', { className: '' },
+            //   h('div', { className: 'donation-content' },
+            //     h('div', { className: 'qr-container' },
+            //       h('img', {
+            //         src: 'img/QR.jpg',
+            //         alt: 'QR para donaciones',
+            //         loading: 'lazy'
+            //       })
+            //     ),
+            //     h('div', { className: 'donation-info' },
+            //       h('h3', { className: 'text-lg md:text-xl font-bold text-gray-800 mb-1' }, 'Donaciones'),
+            //       h('div', { className: 'donation-title' }, 'Todo aporte es bienvenido para ayudarme a pagar el servidor!'),
+            //       h('div', { className: 'alias-container' },
+            //         h('span', { className: 'alias-label' }, 'Alias: '),
+            //         h('span', { className: 'alias-value' }, 'GFRISON')
+            //       ),
+            //       h('a', {
+            //         href: 'https://link.mercadopago.com.ar/quiensevaapp',
+            //         target: '_blank',
+            //         rel: 'noopener noreferrer',
+            //         className: 'text-blue-600 hover:text-blue-800 underline text-sm font-medium inline'
+            //       }, 'Link Mercado Pago')
+            //     )
+            //   )
+            // ),
             calcularTabla.hayEmpateTabla && h('div', { className: 'regla-descenso bg-orange-50 border-l-4 border-orange-500 p-2 md:p-3 text-sm mb-2 md:mb-3' },
               h('strong', null, '⚠️ Partido Definitorio (Tabla): '),
               `${calcularTabla.equiposEmpatadosTabla.length} equipos empatados en puntos en zona de descenso: ${calcularTabla.equiposEmpatadosTabla.map(id => equiposIniciales.find(e => e.id === id)?.nombre).join(', ')}. Se define por partido definitorio entre ellos.`
@@ -896,8 +894,11 @@
                             (equipo.puntosNecesarios === 0 && !descendido && !empate) && h('div', { className: 'text-green-600 font-semibold' },
                               'Salvado'
                             ),
-                            equipo.puntosNecesarios > 0 && h('div', { className: 'text-blue-600 font-semibold' },
-                              `Necesita: ${equipo.puntosNecesarios} pts`
+                            equipo.puntosNecesarios > 0 && h('div', { className: 'flex items-center gap-1' },
+                              h('span', { className: 'text-blue-600 font-semibold' }, `Necesita: ${equipo.puntosNecesarios} pts`),
+                              equipo.id === 'ALD' && modoCalculo === 'seguro' && h('span', { className: 'text-orange-600 font-semibold text-[9px]' },
+                                '(Dep. otros)'
+                              )
                             )
                           )
                         )
