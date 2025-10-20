@@ -272,13 +272,13 @@
           id: 'GIM',
           nombre: 'Gimnasia',
           escudo: 'img/clubes/gimnasia.png',
-          pj: 28,
+          pj: 29,
           puntos: 29,
-          pjPromedios: 110,
+          pjPromedios: 111,
           puntosPromedios: 122,
           partidos: [
             { rival: 'Talleres', rivalId: 'TAL', condicion: 'L', fecha: 28, partidoId: 'GIM-TAL-28', jugado: true },
-            { rival: 'Estudiantes', rivalId: null, condicion: 'V', fecha: 29, partidoId: 'GIM-EST-29' },
+            { rival: 'Estudiantes', rivalId: null, condicion: 'V', fecha: 29, partidoId: 'GIM-EST-29', jugado: true },
             { rival: 'River', rivalId: null, condicion: 'V', fecha: 30, partidoId: 'GIM-RIV-30' },
             { rival: 'Vélez', rivalId: null, condicion: 'L', fecha: 31, partidoId: 'GIM-VEL-31' },
             { rival: 'Platense', rivalId: null, condicion: 'V', fecha: 32, partidoId: 'GIM-PLA-32' }
@@ -304,14 +304,14 @@
           id: 'SAR',
           nombre: 'Sarmiento',
           escudo: 'img/clubes/sarmiento.png',
-          pj: 27,
+          pj: 28,
           puntos: 30,
-          pjPromedios: 109,
+          pjPromedios: 110,
           puntosPromedios: 111,
           partidos: [
             { rival: 'Rosario Central', rivalId: null, condicion: 'V', fecha: 23, pendiente: true, partidoId: 'SAR-RCE-27' },
             { rival: 'River', rivalId: null, condicion: 'V', fecha: 28, partidoId: 'SAR-RIV-28', jugado: true },
-            { rival: 'Vélez', rivalId: null, condicion: 'L', fecha: 29, partidoId: 'SAR-VEL-29' },
+            { rival: 'Vélez', rivalId: null, condicion: 'L', fecha: 29, partidoId: 'SAR-VEL-29', jugado: true },
             { rival: 'Platense', rivalId: null, condicion: 'V', fecha: 30, partidoId: 'SAR-PLA-30' },
             { rival: 'Instituto', rivalId: null, condicion: 'L', fecha: 31, partidoId: 'SAR-INS-31' },
             { rival: 'San Lorenzo', rivalId: null, condicion: 'V', fecha: 32, partidoId: 'SAR-SLO-32' }
@@ -321,13 +321,13 @@
           id: 'TAL',
           nombre: 'Talleres',
           escudo: 'img/clubes/talleres.png',
-          pj: 28,
+          pj: 29,
           puntos: 27,
-          pjPromedios: 110,
+          pjPromedios: 111,
           puntosPromedios: 166,
           partidos: [
             { rival: 'Gimnasia', rivalId: 'GIM', condicion: 'V', fecha: 28, partidoId: 'GIM-TAL-28', jugado: true },
-            { rival: 'River', rivalId: null, condicion: 'L', fecha: 29, partidoId: 'TAL-RIV-29' },
+            { rival: 'River', rivalId: null, condicion: 'L', fecha: 29, partidoId: 'TAL-RIV-29', jugado: true },
             { rival: 'Vélez', rivalId: null, condicion: 'V', fecha: 30, partidoId: 'TAL-VEL-30' },
             { rival: 'Platense', rivalId: null, condicion: 'L', fecha: 31, partidoId: 'TAL-PLA-31' },
             { rival: 'Instituto', rivalId: null, condicion: 'V', fecha: 32, partidoId: 'TAL-INS-32' }
@@ -353,13 +353,13 @@
           id: 'SMA',
           nombre: 'San Martín',
           escudo: 'img/clubes/sanmartin.png',
-          pj: 28,
-          puntos: 23,
-          pjPromedios: 28,
-          puntosPromedios: 23,
+          pj: 29,
+          puntos: 26,
+          pjPromedios: 29,
+          puntosPromedios: 26,
           partidos: [
             { rival: 'San Lorenzo', rivalId: null, condicion: 'V', fecha: 28, partidoId: 'SMA-SLO-28', jugado: true },
-            { rival: 'Independiente', rivalId: null, condicion: 'L', fecha: 29, partidoId: 'SMA-IND-29' },
+            { rival: 'Independiente', rivalId: null, condicion: 'L', fecha: 29, partidoId: 'SMA-IND-29', jugado: true },
             { rival: 'Godoy Cruz', rivalId: 'GOD', condicion: 'V', fecha: 30, partidoId: 'GOD-SMA-30' },
             { rival: 'Lanús', rivalId: null, condicion: 'L', fecha: 31, partidoId: 'SMA-LAN-31' },
             { rival: 'Aldosivi', rivalId: 'ALD', condicion: 'V', fecha: 32, partidoId: 'ALD-SMA-32' }
@@ -410,7 +410,11 @@
         'ALD-RAC-29': 'EXT', // Aldosivi perdió contra Racing
         'NEW-ARG-29': 'EXT', // Newell's perdió contra Argentinos Jrs
         'GOD-LAN-29': 'EXT', // Godoy Cruz perdió contra Lanús
-        'BAN-IRV-29': 'BAN'  // Banfield ganó a Independiente Rivadavia
+        'BAN-IRV-29': 'BAN', // Banfield ganó a Independiente Rivadavia
+        'GIM-EST-29': 'EXT', // Gimnasia perdió contra Estudiantes
+        'TAL-RIV-29': 'EXT', // Talleres perdió contra River
+        'SAR-VEL-29': 'EXT', // Sarmiento perdió contra Vélez
+        'SMA-IND-29': 'SMA'  // San Martín ganó a Independiente
       });
 
       const calcularTabla = useMemo(() => {
@@ -551,19 +555,20 @@
           let puntosNecesarios = 0;
 
           if (modoCalculo === 'seguro') {
-            // Valores hardcodeados basados en cálculo oficial del modo seguro
-            const puntosNecesariosPorEquipo = {
-              'SMA': 12,  // San Martín
-              'GOD': 7,   // Godoy Cruz
-              'TAL': 7,   // Talleres
-              'BAN': 6,   // Banfield
-              'GIM': 5,   // Gimnasia
-              'NEW': 4,   // Newell's
-              'SAR': 4,   // Sarmiento
-              'ALD': equipoActual.partidosRestantes * 3  // Aldosivi: necesita ganar todo pero depende de otros
+            // Puntos objetivo para salvarse (valores base + puntos actuales iniciales)
+            const puntosObjetivoSeguro = {
+              'SMA': 26 + 9,  // San Martín: 26 pts actuales + 9 necesarios = 35
+              'GOD': 27 + 7,  // Godoy Cruz: 27 pts actuales + 7 necesarios = 34
+              'TAL': 27 + 7,  // Talleres: 27 pts actuales + 7 necesarios = 34
+              'BAN': 31 + 6,  // Banfield: 31 pts actuales + 6 necesarios = 37
+              'GIM': 29 + 5,  // Gimnasia: 29 pts actuales + 5 necesarios = 34
+              'NEW': 30 + 4,  // Newell's: 30 pts actuales + 4 necesarios = 34
+              'SAR': 30 + 4,  // Sarmiento: 30 pts actuales + 4 necesarios = 34
+              'ALD': 24 + (equipoActual.partidosRestantes * 3)  // Aldosivi: depende de otros
             };
 
-            puntosNecesarios = puntosNecesariosPorEquipo[equipoActual.id] || 0;
+            const puntosObjetivo = puntosObjetivoSeguro[equipoActual.id] || equipoActual.puntosTemporada;
+            puntosNecesarios = Math.max(0, puntosObjetivo - equipoActual.puntosTemporada);
           } else {
             const objetivoSalvacion = 31;
             puntosNecesarios = Math.max(0, objetivoSalvacion - equipoActual.puntosTemporada);
@@ -617,7 +622,11 @@
           'ALD-RAC-29': 'EXT', // Mantener el partido Aldosivi vs Racing
           'NEW-ARG-29': 'EXT', // Mantener el partido Newell's vs Argentinos Jrs
           'GOD-LAN-29': 'EXT', // Mantener el partido Godoy Cruz vs Lanús
-          'BAN-IRV-29': 'BAN'  // Mantener el partido Banfield vs Independiente Rivadavia
+          'BAN-IRV-29': 'BAN', // Mantener el partido Banfield vs Independiente Rivadavia
+          'GIM-EST-29': 'EXT', // Mantener el partido Gimnasia vs Estudiantes
+          'TAL-RIV-29': 'EXT', // Mantener el partido Talleres vs River
+          'SAR-VEL-29': 'EXT', // Mantener el partido Sarmiento vs Vélez
+          'SMA-IND-29': 'SMA'  // Mantener el partido San Martín vs Independiente
         });
       };
 
