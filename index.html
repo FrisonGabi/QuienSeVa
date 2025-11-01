@@ -361,14 +361,14 @@
           id: 'ALD',
           nombre: 'Aldosivi',
           escudo: 'img/clubes/aldosivi.png',
-          pj: 29,
-          puntos: 24,
-          pjPromedios: 29,
-          puntosPromedios: 24,
+          pj: 30,
+          puntos: 27,
+          pjPromedios: 30,
+          puntosPromedios: 27,
           partidos: [
             { rival: 'Huracán', rivalId: null, condicion: 'L', fecha: 28, partidoId: 'ALD-HUR-28', jugado: true },
             { rival: 'Racing', rivalId: null, condicion: 'V', fecha: 29, partidoId: 'ALD-RAC-29', jugado: true },
-            { rival: 'Indep. Rivadavia', rivalId: null, condicion: 'L', fecha: 30, partidoId: 'ALD-IRV-30' },
+            { rival: 'Indep. Rivadavia', rivalId: null, condicion: 'L', fecha: 30, partidoId: 'ALD-IRV-30', jugado: true },
             { rival: 'Banfield', rivalId: 'BAN', condicion: 'V', fecha: 31, partidoId: 'BAN-ALD-31' },
             { rival: 'San Martín', rivalId: 'SMA', condicion: 'L', fecha: 32, partidoId: 'ALD-SMA-32' }
           ]
@@ -377,7 +377,7 @@
           id: 'NEW',
           nombre: 'Newell\'s',
           escudo: 'img/clubes/newells.png',
-          pj: 29,
+          pj: 30,
           puntos: 30,
           pjPromedios: 111,
           puntosPromedios: 132,
@@ -408,7 +408,8 @@
         'SAR-VEL-29': 'EXT',
         'SMA-IND-29': 'SMA',
         'SAR-RCE-27': 'EXT',
-        'NEW-UNI-30': 'EXT'
+        'NEW-UNI-30': 'EXT',
+        'ALD-IRV-30': 'ALD'
       });
 
       const calcularTabla = useMemo(() => {
@@ -538,7 +539,7 @@
             // Puntos objetivo para salvación garantizada
             // Basado en análisis: todos necesitan llegar a 34 puntos excepto casos especiales
             const puntosObjetivoSeguro = {
-              'ALD': 24 + 9,      // 33 pts - Necesita ganar todo pero depende de otros
+              'ALD': 27 + 6,      // 33 pts - Necesita ganar todo pero depende de otros
               'SMA': 26 + 9,      // 35 pts - Necesita superar a Aldosivi en promedio
               'GOD': 27 + 7,      // 34 pts - Buen promedio, asegura por tabla
               'TAL': 27 + 7,      // 34 pts - Buen promedio, asegura por tabla
@@ -611,7 +612,8 @@
           'SAR-VEL-29': 'EXT',
           'SMA-IND-29': 'SMA',
           'SAR-RCE-27': 'EXT',
-          'NEW-UNI-30': 'EXT'
+          'NEW-UNI-30': 'EXT',
+          'ALD-IRV-30': 'ALD'
         });
       };
 
