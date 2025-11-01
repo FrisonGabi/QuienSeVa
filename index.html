@@ -296,7 +296,7 @@
           id: 'SAR',
           nombre: 'Sarmiento',
           escudo: 'img/clubes/sarmiento.png',
-          pj: 28,
+          pj: 29,
           puntos: 30,
           pjPromedios: 110,
           puntosPromedios: 111,
@@ -384,7 +384,7 @@
           partidos: [
             { rival: 'Tigre', rivalId: null, condicion: 'V', fecha: 28, partidoId: 'NEW-TIG-28', jugado: true },
             { rival: 'Argentinos Jrs', rivalId: null, condicion: 'V', fecha: 29, partidoId: 'NEW-ARG-29', jugado: true },
-            { rival: 'Unión', rivalId: null, condicion: 'L', fecha: 30, partidoId: 'NEW-UNI-30' },
+            { rival: 'Unión', rivalId: null, condicion: 'L', fecha: 30, partidoId: 'NEW-UNI-30', jugado: true },
             { rival: 'Huracán', rivalId: null, condicion: 'V', fecha: 31, partidoId: 'NEW-HUR-31' },
             { rival: 'Racing', rivalId: null, condicion: 'L', fecha: 32, partidoId: 'NEW-RAC-32' }
           ]
@@ -532,24 +532,27 @@
         let hayEmpate = hayDefinitorioPorTabla;
 
         const equiposConPuntosNecesarios = porTabla.map(equipoActual => {
-          const cantidadDescienden = 2;
           let puntosNecesarios = 0;
 
           if (modoCalculo === 'seguro') {
+            // Puntos objetivo para salvación garantizada
+            // Basado en análisis: todos necesitan llegar a 34 puntos excepto casos especiales
             const puntosObjetivoSeguro = {
-              'SMA': 26 + 9,
-              'GOD': 27 + 7,
-              'TAL': 27 + 7,
-              'BAN': 31 + 6,
-              'GIM': 29 + 5,
-              'NEW': 30 + 4,
-              'SAR': 30 + 4,
-              'ALD': 24 + (equipoActual.partidosRestantes * 3)
+              'ALD': 24 + 9,      // 33 pts - Necesita ganar todo pero depende de otros
+              'SMA': 26 + 9,      // 35 pts - Necesita superar a Aldosivi en promedio
+              'GOD': 27 + 7,      // 34 pts - Buen promedio, asegura por tabla
+              'TAL': 27 + 7,      // 34 pts - Buen promedio, asegura por tabla
+              'GIM': 29 + 5,      // 34 pts - Mejora promedio suficiente + asegura tabla
+              'SAR': 30 + 4,      // 34 pts - Supera límite de descenso por ambas vías
+              'NEW': 30 + 4,      // 34 pts - Buen promedio + asegura tabla
+              'BAN': 31 + 3       // 34 pts - Ya cerca del objetivo seguro
             };
 
             const puntosObjetivo = puntosObjetivoSeguro[equipoActual.id] || equipoActual.puntosTemporada;
             puntosNecesarios = Math.max(0, puntosObjetivo - equipoActual.puntosTemporada);
+            
           } else {
+            // Modo aproximado: objetivo histórico de 31 puntos
             const objetivoSalvacion = 31;
             puntosNecesarios = Math.max(0, objetivoSalvacion - equipoActual.puntosTemporada);
           }
@@ -795,8 +798,8 @@
               h('div', { className: 'mt-2 text-xs' },
                 h('strong', null, modoCalculo === 'seguro' ? 'Modo Seguro: ' : 'Modo Aproximado: '),
                 modoCalculo === 'seguro'
-                  ? 'Puntos necesarios para salvarse sin depender de nadie (todos ganan todo).'
-                  : 'Puntos aproximados basados en histórico de salvación (~31 puntos).'
+                  ? 'Puntos necesarios para salvarse sin depender de nadie (considerando peor escenario posible).'
+                  : 'Puntos aproximados basados en objetivo histórico (~34 puntos).'
               )
             ),
             calcularTabla.hayEmpateTabla && h('div', { className: 'regla-descenso bg-orange-50 border-l-4 border-orange-500 p-2 md:p-3 text-sm mb-2 md:mb-3' },
