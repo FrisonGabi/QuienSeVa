@@ -313,14 +313,14 @@
           id: 'TAL',
           nombre: 'Talleres',
           escudo: 'img/clubes/talleres.png',
-          pj: 29,
-          puntos: 27,
-          pjPromedios: 111,
-          puntosPromedios: 166,
+          pj: 30,
+          puntos: 30,
+          pjPromedios: 112,
+          puntosPromedios: 169,
           partidos: [
             { rival: 'Gimnasia', rivalId: 'GIM', condicion: 'V', fecha: 28, partidoId: 'GIM-TAL-28', jugado: true },
             { rival: 'River', rivalId: null, condicion: 'L', fecha: 29, partidoId: 'TAL-RIV-29', jugado: true },
-            { rival: 'Vélez', rivalId: null, condicion: 'V', fecha: 30, partidoId: 'TAL-VEL-30' },
+            { rival: 'Vélez', rivalId: null, condicion: 'V', fecha: 30, partidoId: 'TAL-VEL-30', jugado: true },
             { rival: 'Platense', rivalId: null, condicion: 'L', fecha: 31, partidoId: 'TAL-PLA-31' },
             { rival: 'Instituto', rivalId: null, condicion: 'V', fecha: 32, partidoId: 'TAL-INS-32' }
           ]
@@ -377,7 +377,7 @@
           id: 'NEW',
           nombre: 'Newell\'s',
           escudo: 'img/clubes/newells.png',
-          pj: 30,
+          pj: 29,
           puntos: 30,
           pjPromedios: 111,
           puntosPromedios: 132,
@@ -409,7 +409,8 @@
         'SMA-IND-29': 'SMA',
         'SAR-RCE-27': 'EXT',
         'NEW-UNI-30': 'EXT',
-        'ALD-IRV-30': 'ALD'
+        'ALD-IRV-30': 'ALD',
+        'TAL-VEL-30': 'TAL'
       });
 
       const calcularTabla = useMemo(() => {
@@ -453,7 +454,14 @@
           };
         });
 
-        const porTabla = [...equiposCalculados].sort((a, b) => b.puntosTemporada - a.puntosTemporada);
+        const porTabla = [...equiposCalculados].sort((a, b) => {
+          // Primero ordenar por puntos
+          if (b.puntosTemporada !== a.puntosTemporada) {
+            return b.puntosTemporada - a.puntosTemporada;
+          }
+          // Si están empatados en puntos, ordenar por promedio
+          return b.promedio - a.promedio;
+        });
         const porPromedios = [...equiposCalculados].sort((a, b) => b.promedio - a.promedio);
 
         const ultimoPromedio = porPromedios[porPromedios.length - 1];
@@ -542,7 +550,7 @@
               'ALD': 27 + 6,      // 33 pts - Necesita ganar todo pero depende de otros
               'SMA': 26 + 9,      // 35 pts - Necesita superar a Aldosivi en promedio
               'GOD': 27 + 7,      // 34 pts - Buen promedio, asegura por tabla
-              'TAL': 27 + 7,      // 34 pts - Buen promedio, asegura por tabla
+              'TAL': 30 + 4,      // 34 pts - Buen promedio, asegura por tabla
               'GIM': 29 + 5,      // 34 pts - Mejora promedio suficiente + asegura tabla
               'SAR': 30 + 4,      // 34 pts - Supera límite de descenso por ambas vías
               'NEW': 30 + 4,      // 34 pts - Buen promedio + asegura tabla
@@ -613,7 +621,8 @@
           'SMA-IND-29': 'SMA',
           'SAR-RCE-27': 'EXT',
           'NEW-UNI-30': 'EXT',
-          'ALD-IRV-30': 'ALD'
+          'ALD-IRV-30': 'ALD',
+          'TAL-VEL-30': 'TAL'
         });
       };
 
