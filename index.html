@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- SEO Meta Tags -->
   <title>Quién Se Va</title>
   <meta name="description" content="Simulador interactivo de descenso del fútbol argentino. Calcula qué equipos descienden según tabla anual y promedios. Simula resultados en tiempo real.">
   <meta name="keywords" content="descenso, fútbol argentino, tabla de promedios, simulador, tabla anual, descenso 2025">
@@ -12,7 +11,6 @@
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://quienseva.netlify.app">
 
-  <!-- Open Graph / Facebook / WhatsApp -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://quienseva.netlify.app">
   <meta property="og:title" content="¿Quién Se Va? - Simulador de Descenso Fútbol Argentino">
@@ -24,7 +22,6 @@
   <meta property="og:locale" content="es_AR">
   <meta property="og:site_name" content="Quién Se Va">
 
-  <!-- Twitter -->
   <meta property="twitter:card" content="summary_large_image">
   <meta property="twitter:url" content="https://quienseva.netlify.app">
   <meta property="twitter:title" content="¿Quién Se Va? - Simulador de Descenso Fútbol Argentino">
@@ -32,18 +29,15 @@
   <meta property="twitter:image" content="https://quienseva.netlify.app/img/og-image.png">
   <meta property="twitter:image:alt" content="Quién Se Va - Simulador de Descenso">
 
-  <!-- Favicon -->
   <link rel="icon" type="image/png" href="img/favicon.png">
   <link rel="apple-touch-icon" href="img/favicon.png">
   <link rel="shortcut icon" type="image/png" href="img/favicon.png">
 
-  <!-- Theme Color -->
   <meta name="theme-color" content="#0f172a">
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
-    /* Estilos base fijos para captura */
     * {
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
@@ -132,7 +126,6 @@
       .equipo-titulo {
         font-size: 0.875rem !important;
       }
-      /* Reducir padding general en móviles */
       #root > div {
         padding: 0.5rem !important;
       }
@@ -238,7 +231,6 @@
     import ReactDOM from 'https://esm.sh/react-dom@18/client';
     import { Trophy, TrendingDown } from 'https://esm.sh/lucide-react@0.263.1';
 
-    // Ícono de X (Twitter)
     const XIcon = ({ size = 16, className = '' }) =>
       React.createElement('svg', {
         width: size,
@@ -255,7 +247,7 @@
     const { createElement: h } = React;
 
     function App() {
-      const [modoCalculo, setModoCalculo] = React.useState('seguro'); // 'seguro' o 'aproximado'
+      const [modoCalculo, setModoCalculo] = React.useState('seguro');
       const [mostrarPromedios, setMostrarPromedios] = React.useState(false);
       const [esMobile, setEsMobile] = React.useState(window.innerWidth <= 768);
 
@@ -309,7 +301,7 @@
           pjPromedios: 110,
           puntosPromedios: 111,
           partidos: [
-            { rival: 'Rosario Central', rivalId: null, condicion: 'V', fecha: 23, pendiente: true, partidoId: 'SAR-RCE-27' },
+            { rival: 'Rosario Central', rivalId: null, condicion: 'V', fecha: 23, partidoId: 'SAR-RCE-27', jugado: true },
             { rival: 'River', rivalId: null, condicion: 'V', fecha: 28, partidoId: 'SAR-RIV-28', jugado: true },
             { rival: 'Vélez', rivalId: null, condicion: 'L', fecha: 29, partidoId: 'SAR-VEL-29', jugado: true },
             { rival: 'Platense', rivalId: null, condicion: 'V', fecha: 30, partidoId: 'SAR-PLA-30' },
@@ -400,21 +392,23 @@
       ];
 
       const [resultados, setResultados] = useState({
-        'GIM-TAL-28': 'TAL', // Talleres ganó a Gimnasia
-        'BAN-RAC-28': 'EXT', // Racing ganó a Banfield
-        'SMA-SLO-28': 'SMA', // San Martín ganó a San Lorenzo
-        'ALD-HUR-28': 'ALD', // Aldosivi ganó a Huracán
-        'GOD-IRV-28': 'E',   // Godoy Cruz empató con Indep. Rivadavia
-        'SAR-RIV-28': 'SAR', // Sarmiento ganó a River
-        'NEW-TIG-28': 'E',   // Newell's empató con Tigre
-        'ALD-RAC-29': 'EXT', // Aldosivi perdió contra Racing
-        'NEW-ARG-29': 'EXT', // Newell's perdió contra Argentinos Jrs
-        'GOD-LAN-29': 'EXT', // Godoy Cruz perdió contra Lanús
-        'BAN-IRV-29': 'BAN', // Banfield ganó a Independiente Rivadavia
-        'GIM-EST-29': 'EXT', // Gimnasia perdió contra Estudiantes
-        'TAL-RIV-29': 'EXT', // Talleres perdió contra River
-        'SAR-VEL-29': 'EXT', // Sarmiento perdió contra Vélez
-        'SMA-IND-29': 'SMA'  // San Martín ganó a Independiente
+        'GIM-TAL-28': 'TAL',
+        'BAN-RAC-28': 'EXT',
+        'SMA-SLO-28': 'SMA',
+        'ALD-HUR-28': 'ALD',
+        'GOD-IRV-28': 'E',
+        'SAR-RIV-28': 'SAR',
+        'NEW-TIG-28': 'E',
+        'ALD-RAC-29': 'EXT',
+        'NEW-ARG-29': 'EXT',
+        'GOD-LAN-29': 'EXT',
+        'BAN-IRV-29': 'BAN',
+        'GIM-EST-29': 'EXT',
+        'TAL-RIV-29': 'EXT',
+        'SAR-VEL-29': 'EXT',
+        'SMA-IND-29': 'SMA',
+        'SAR-RCE-27': 'EXT',
+        'NEW-UNI-30': 'EXT'
       });
 
       const calcularTabla = useMemo(() => {
@@ -461,11 +455,9 @@
         const porTabla = [...equiposCalculados].sort((a, b) => b.puntosTemporada - a.puntosTemporada);
         const porPromedios = [...equiposCalculados].sort((a, b) => b.promedio - a.promedio);
 
-        // 1. PRIMER DESCENDIDO: Último promedio
         const ultimoPromedio = porPromedios[porPromedios.length - 1];
         const promedioUltimo = parseFloat(ultimoPromedio.promedio.toFixed(3));
         
-        // Buscar todos los equipos con el mismo promedio más bajo
         const equiposConPromedioMasBajo = porPromedios.filter(e => 
           parseFloat(e.promedio.toFixed(3)) === promedioUltimo
         );
@@ -475,24 +467,19 @@
         let equiposEmpatadosPromedios = [];
 
         if (equiposConPromedioMasBajo.length > 1) {
-          // Hay empate en promedios - se define por partido definitorio
-          // NO asignamos descendido hasta que se juegue el definitorio
           hayEmpatePromedios = true;
           equiposEmpatadosPromedios = equiposConPromedioMasBajo.map(e => e.id);
-          descendidoPorPromedios = null; // Sin descendido hasta definir
+          descendidoPorPromedios = null;
         } else {
           descendidoPorPromedios = ultimoPromedio;
         }
 
-        // 2. SEGUNDO DESCENDIDO: Último en tabla anual (excluyendo al primero)
         const ultimoPorTabla = porTabla[porTabla.length - 1];
         let descendidoPorTabla = null;
         let hayDefinitorioPorTabla = false;
         let equiposDefinitorioPorTabla = [];
 
-        // Si hay empate en promedios, no sabemos quién desciende por promedios aún
         if (hayEmpatePromedios) {
-          // Buscamos el último por tabla sin excluir a nadie todavía
           const puntajeUltimo = ultimoPorTabla.puntosTemporada;
           const equiposConMismoPuntaje = porTabla.filter(e => 
             e.puntosTemporada === puntajeUltimo
@@ -501,19 +488,16 @@
           if (equiposConMismoPuntaje.length > 1) {
             hayDefinitorioPorTabla = true;
             equiposDefinitorioPorTabla = equiposConMismoPuntaje.map(e => e.id);
-            descendidoPorTabla = null; // Sin descendido hasta definir
+            descendidoPorTabla = null;
           } else {
             descendidoPorTabla = ultimoPorTabla;
           }
         }
-        // Si el último por promedios también es último por tabla
         else if (descendidoPorPromedios && descendidoPorPromedios.id === ultimoPorTabla.id) {
-          // Excluimos al primero y tomamos el penúltimo en tabla
           const tablaSinPrimero = porTabla.filter(e => e.id !== descendidoPorPromedios.id);
           const penultimoPorTabla = tablaSinPrimero[tablaSinPrimero.length - 1];
           const puntajePenultimo = penultimoPorTabla.puntosTemporada;
 
-          // Buscar todos los equipos con el mismo puntaje más bajo (excluyendo al primero)
           const equiposConMismoPuntaje = tablaSinPrimero.filter(e => 
             e.puntosTemporada === puntajePenultimo
           );
@@ -521,15 +505,13 @@
           if (equiposConMismoPuntaje.length > 1) {
             hayDefinitorioPorTabla = true;
             equiposDefinitorioPorTabla = equiposConMismoPuntaje.map(e => e.id);
-            descendidoPorTabla = null; // Sin descendido hasta definir
+            descendidoPorTabla = null;
           } else {
             descendidoPorTabla = penultimoPorTabla;
           }
         } else {
-          // El último por promedios NO es el último por tabla
           const puntajeUltimo = ultimoPorTabla.puntosTemporada;
           
-          // Buscar todos los equipos con el mismo puntaje más bajo
           const equiposConMismoPuntaje = porTabla.filter(e => 
             e.puntosTemporada === puntajeUltimo && (!descendidoPorPromedios || e.id !== descendidoPorPromedios.id)
           );
@@ -537,11 +519,10 @@
           if (equiposConMismoPuntaje.length > 1) {
             hayDefinitorioPorTabla = true;
             equiposDefinitorioPorTabla = equiposConMismoPuntaje.map(e => e.id);
-            descendidoPorTabla = null; // Sin descendido hasta definir
+            descendidoPorTabla = null;
           } else if (equiposConMismoPuntaje.length === 1) {
             descendidoPorTabla = equiposConMismoPuntaje[0];
           } else if (descendidoPorPromedios) {
-            // Si el último es el que desciende por promedios, tomamos el penúltimo
             const tablaSinPrimero = porTabla.filter(e => e.id !== descendidoPorPromedios.id);
             descendidoPorTabla = tablaSinPrimero[tablaSinPrimero.length - 1];
           }
@@ -555,16 +536,15 @@
           let puntosNecesarios = 0;
 
           if (modoCalculo === 'seguro') {
-            // Puntos objetivo para salvarse (valores base + puntos actuales iniciales)
             const puntosObjetivoSeguro = {
-              'SMA': 26 + 9,  // San Martín: 26 pts actuales + 9 necesarios = 35
-              'GOD': 27 + 7,  // Godoy Cruz: 27 pts actuales + 7 necesarios = 34
-              'TAL': 27 + 7,  // Talleres: 27 pts actuales + 7 necesarios = 34
-              'BAN': 31 + 6,  // Banfield: 31 pts actuales + 6 necesarios = 37
-              'GIM': 29 + 5,  // Gimnasia: 29 pts actuales + 5 necesarios = 34
-              'NEW': 30 + 4,  // Newell's: 30 pts actuales + 4 necesarios = 34
-              'SAR': 30 + 4,  // Sarmiento: 30 pts actuales + 4 necesarios = 34
-              'ALD': 24 + (equipoActual.partidosRestantes * 3)  // Aldosivi: depende de otros
+              'SMA': 26 + 9,
+              'GOD': 27 + 7,
+              'TAL': 27 + 7,
+              'BAN': 31 + 6,
+              'GIM': 29 + 5,
+              'NEW': 30 + 4,
+              'SAR': 30 + 4,
+              'ALD': 24 + (equipoActual.partidosRestantes * 3)
             };
 
             const puntosObjetivo = puntosObjetivoSeguro[equipoActual.id] || equipoActual.puntosTemporada;
@@ -612,31 +592,31 @@
 
       const resetearTodo = () => {
         setResultados({
-          'GIM-TAL-28': 'TAL', // Mantener el partido Talleres vs Gimnasia
-          'BAN-RAC-28': 'EXT', // Mantener el partido Racing vs Banfield
-          'SMA-SLO-28': 'SMA', // Mantener el partido San Martín vs San Lorenzo
-          'ALD-HUR-28': 'ALD', // Mantener el partido Aldosivi vs Huracán
-          'GOD-IRV-28': 'E',   // Mantener el partido Godoy Cruz vs Indep. Rivadavia
-          'SAR-RIV-28': 'SAR', // Mantener el partido Sarmiento vs River
-          'NEW-TIG-28': 'E',   // Mantener el partido Newell's vs Tigre
-          'ALD-RAC-29': 'EXT', // Mantener el partido Aldosivi vs Racing
-          'NEW-ARG-29': 'EXT', // Mantener el partido Newell's vs Argentinos Jrs
-          'GOD-LAN-29': 'EXT', // Mantener el partido Godoy Cruz vs Lanús
-          'BAN-IRV-29': 'BAN', // Mantener el partido Banfield vs Independiente Rivadavia
-          'GIM-EST-29': 'EXT', // Mantener el partido Gimnasia vs Estudiantes
-          'TAL-RIV-29': 'EXT', // Mantener el partido Talleres vs River
-          'SAR-VEL-29': 'EXT', // Mantener el partido Sarmiento vs Vélez
-          'SMA-IND-29': 'SMA'  // Mantener el partido San Martín vs Independiente
+          'GIM-TAL-28': 'TAL',
+          'BAN-RAC-28': 'EXT',
+          'SMA-SLO-28': 'SMA',
+          'ALD-HUR-28': 'ALD',
+          'GOD-IRV-28': 'E',
+          'SAR-RIV-28': 'SAR',
+          'NEW-TIG-28': 'E',
+          'ALD-RAC-29': 'EXT',
+          'NEW-ARG-29': 'EXT',
+          'GOD-LAN-29': 'EXT',
+          'BAN-IRV-29': 'BAN',
+          'GIM-EST-29': 'EXT',
+          'TAL-RIV-29': 'EXT',
+          'SAR-VEL-29': 'EXT',
+          'SMA-IND-29': 'SMA',
+          'SAR-RCE-27': 'EXT',
+          'NEW-UNI-30': 'EXT'
         });
       };
 
       const capturarImagen = async () => {
         try {
-          // Scroll al top
           window.scrollTo(0, 0);
           await new Promise(resolve => setTimeout(resolve, 300));
 
-          // Capturar solo el contenedor de tablas y simulación
           const elemento = document.getElementById('captura-container');
           
           if (!elemento) {
@@ -644,7 +624,6 @@
             return;
           }
           
-          // Guardar estilos originales
           const originalStyles = {
             bodyOverflow: document.body.style.overflow,
             htmlOverflow: document.documentElement.style.overflow,
@@ -652,18 +631,15 @@
             elementPosition: elemento.style.position
           };
           
-          // Aplicar estilos para captura
           document.body.style.overflow = 'visible';
           document.documentElement.style.overflow = 'visible';
           document.body.style.height = 'auto';
           elemento.style.position = 'static';
           
-          // Forzar reflow
           void elemento.offsetHeight;
           
           await new Promise(resolve => setTimeout(resolve, 200));
           
-          // Obtener las dimensiones reales del elemento
           const rect = elemento.getBoundingClientRect();
           const parentRect = elemento.parentElement.getBoundingClientRect();
           
@@ -685,34 +661,28 @@
             onclone: (clonedDoc) => {
               const clonedContainer = clonedDoc.getElementById('captura-container');
               if (clonedContainer) {
-                // Aplicar estilos al contenedor clonado
                 clonedContainer.style.position = 'static';
                 clonedContainer.style.transform = 'none';
                 clonedContainer.style.top = '0';
                 clonedContainer.style.left = '0';
                 clonedContainer.style.margin = '0 auto';
                 
-                // Recorrer todos los elementos y corregir estilos
                 const allElements = clonedContainer.querySelectorAll('*');
                 allElements.forEach(el => {
-                  // Remover transforms
                   el.style.transform = 'none';
                   el.style.webkitTransform = 'none';
                   
-                  // Mantener font-size computado
                   const computedStyle = window.getComputedStyle(el);
                   if (computedStyle.fontSize) {
                     el.style.fontSize = computedStyle.fontSize;
                   }
                   
-                  // Asegurar overflow visible en textos
                   if (el.tagName === 'SPAN' || el.tagName === 'DIV' || el.tagName === 'P' || el.tagName === 'A') {
                     el.style.overflow = 'visible';
                     el.style.textOverflow = 'clip';
                     el.style.whiteSpace = computedStyle.whiteSpace;
                   }
                   
-                  // Botones con texto completo
                   if (el.tagName === 'BUTTON') {
                     el.style.overflow = 'visible';
                     el.style.whiteSpace = 'nowrap';
@@ -724,13 +694,11 @@
             }
           });
 
-          // Restaurar estilos originales
           document.body.style.overflow = originalStyles.bodyOverflow;
           document.documentElement.style.overflow = originalStyles.htmlOverflow;
           document.body.style.height = originalStyles.bodyHeight;
           elemento.style.position = originalStyles.elementPosition;
 
-          // Descargar imagen
           canvas.toBlob((blob) => {
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -747,11 +715,9 @@
       };
 
       const esDescendido = (equipoId) => {
-        // Si hay empate en promedios, no marcar como descendido hasta que se defina
         if (calcularTabla.hayEmpatePromedios && calcularTabla.equiposEmpatadosPromedios.includes(equipoId)) {
           return false;
         }
-        // Si hay empate en tabla, no marcar como descendido hasta que se defina
         if (calcularTabla.hayEmpateTabla && calcularTabla.equiposEmpatadosTabla.includes(equipoId)) {
           return false;
         }
@@ -760,7 +726,6 @@
       };
 
       const tipoDescenso = (equipoId) => {
-        // No mostrar tipo de descenso si hay empate
         if (calcularTabla.hayEmpatePromedios && calcularTabla.equiposEmpatadosPromedios.includes(equipoId)) {
           return null;
         }
@@ -778,7 +743,8 @@
       };
 
       const esEmpateDescenso = (equipoId) => {
-        return calcularTabla.equiposEmpatadosTabla.includes(equipoId);
+        return calcularTabla.equiposEmpatadosTabla.includes(equipoId) || 
+               calcularTabla.equiposEmpatadosPromedios.includes(equipoId);
       };
 
       const esEmpatePromedios = (equipoId) => {
@@ -800,10 +766,7 @@
                   target: '_blank',
                   rel: 'noopener noreferrer',
                   className: 'flex items-center gap-1 text-xs md:text-sm text-slate-950 hover:text-blue-600 transition-colors font-semibold'
-                },
-                  // h(XIcon, { size: 14, className: 'md:w-4 md:h-4' }),
-                  // 'ZorritoFassi'
-                )
+                })
               ),
               h('div', { className: 'flex flex-col md:flex-row gap-2' },
                 esMobile && h('button', {
@@ -836,31 +799,6 @@
                   : 'Puntos aproximados basados en histórico de salvación (~31 puntos).'
               )
             ),
-            // h('div', { className: '' },
-            //   h('div', { className: 'donation-content' },
-            //     h('div', { className: 'qr-container' },
-            //       h('img', {
-            //         src: 'img/QR.jpg',
-            //         alt: 'QR para donaciones',
-            //         loading: 'lazy'
-            //       })
-            //     ),
-            //     h('div', { className: 'donation-info' },
-            //       h('h3', { className: 'text-lg md:text-xl font-bold text-gray-800 mb-1' }, 'Donaciones'),
-            //       h('div', { className: 'donation-title' }, 'Todo aporte es bienvenido para ayudarme a pagar el servidor!'),
-            //       h('div', { className: 'alias-container' },
-            //         h('span', { className: 'alias-label' }, 'Alias: '),
-            //         h('span', { className: 'alias-value' }, 'GFRISON')
-            //       ),
-            //       h('a', {
-            //         href: 'https://link.mercadopago.com.ar/quiensevaapp',
-            //         target: '_blank',
-            //         rel: 'noopener noreferrer',
-            //         className: 'text-blue-600 hover:text-blue-800 underline text-sm font-medium inline'
-            //       }, 'Link Mercado Pago')
-            //     )
-            //   )
-            // ),
             calcularTabla.hayEmpateTabla && h('div', { className: 'regla-descenso bg-orange-50 border-l-4 border-orange-500 p-2 md:p-3 text-sm mb-2 md:mb-3' },
               h('strong', null, '⚠️ Partido Definitorio (Tabla): '),
               `${calcularTabla.equiposEmpatadosTabla.length} equipos empatados en puntos en zona de descenso: ${calcularTabla.equiposEmpatadosTabla.map(id => equiposIniciales.find(e => e.id === id)?.nombre).join(', ')}. Se define por partido definitorio entre ellos.`
@@ -895,7 +833,7 @@
                           h('div', { className: 'flex items-center gap-1 md:gap-2' },
                             h('span', { className: 'tabla-nombre font-bold text-base' }, equipo.nombre),
                             empate && h('span', { className: 'font-semibold text-orange-600 text-[10px] md:text-xs flex items-center gap-0.5' },
-                              '⚠️', h('span', null, 'Def')
+                              '⚠️', h('span', null, calcularTabla.equiposEmpatadosPromedios.includes(equipo.id) ? 'Def Prom' : 'Def')
                             )
                           ),
                           h('div', { className: 'tabla-info text-xs text-gray-600' },
