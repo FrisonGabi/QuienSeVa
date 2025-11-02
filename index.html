@@ -483,7 +483,6 @@
         });
         const porPromedios = [...equiposCalculados].sort((a, b) => b.promedio - a.promedio);
 
-        // ===== CÁLCULO DE DESCENSO POR PROMEDIOS =====
         const ultimoPromedio = porPromedios[porPromedios.length - 1];
         const promedioUltimo = parseFloat(ultimoPromedio.promedio.toFixed(3));
         
@@ -496,45 +495,64 @@
         let equiposEmpatadosPromedios = [];
 
         if (equiposConPromedioMasBajo.length > 1) {
-          // Hay empate en promedios -> definitorio
           hayEmpatePromedios = true;
           equiposEmpatadosPromedios = equiposConPromedioMasBajo.map(e => e.id);
           descendidoPorPromedios = null;
         } else {
-          // Un solo equipo con el promedio más bajo
           descendidoPorPromedios = ultimoPromedio;
         }
 
-        // ===== CÁLCULO DE DESCENSO POR TABLA ANUAL =====
+        const ultimoPorTabla = porTabla[porTabla.length - 1];
         let descendidoPorTabla = null;
         let hayDefinitorioPorTabla = false;
         let equiposDefinitorioPorTabla = [];
 
-        // Equipos a excluir del cálculo de tabla: los que están en definitorio de promedios o el descendido por promedios
-        const equiposAExcluir = hayEmpatePromedios 
-          ? equiposEmpatadosPromedios 
-          : (descendidoPorPromedios ? [descendidoPorPromedios.id] : []);
-
-        // Filtrar tabla excluyendo a los equipos que ya descienden/definen por promedios
-        const tablaFiltrada = porTabla.filter(e => !equiposAExcluir.includes(e.id));
-
-        if (tablaFiltrada.length > 0) {
-          const ultimoPorTablaFiltrada = tablaFiltrada[tablaFiltrada.length - 1];
-          const puntajeUltimo = ultimoPorTablaFiltrada.puntosTemporada;
-
-          // Buscar todos los equipos con el mismo puntaje que el último
-          const equiposConMismoPuntaje = tablaFiltrada.filter(e => 
+        if (hayEmpatePromedios) {
+          const puntajeUltimo = ultimoPorTabla.puntosTemporada;
+          const equiposConMismoPuntaje = porTabla.filter(e => 
             e.puntosTemporada === puntajeUltimo
           );
 
           if (equiposConMismoPuntaje.length > 1) {
-            // Hay empate en puntos -> definitorio
             hayDefinitorioPorTabla = true;
             equiposDefinitorioPorTabla = equiposConMismoPuntaje.map(e => e.id);
             descendidoPorTabla = null;
           } else {
-            // Un solo equipo en último lugar
-            descendidoPorTabla = ultimoPorTablaFiltrada;
+            descendidoPorTabla = ultimoPorTabla;
+          }
+        }
+        else if (descendidoPorPromedios && descendidoPorPromedios.id === ultimoPorTabla.id) {
+          const tablaSinPrimero = porTabla.filter(e => e.id !== descendidoPorPromedios.id);
+          const penultimoPorTabla = tablaSinPrimero[tablaSinPrimero.length - 1];
+          const puntajePenultimo = penultimoPorTabla.puntosTemporada;
+
+          const equiposConMismoPuntaje = tablaSinPrimero.filter(e => 
+            e.puntosTemporada === puntajePenultimo
+          );
+
+          if (equiposConMismoPuntaje.length > 1) {
+            hayDefinitorioPorTabla = true;
+            equiposDefinitorioPorTabla = equiposConMismoPuntaje.map(e => e.id);
+            descendidoPorTabla = null;
+          } else {
+            descendidoPorTabla = penultimoPorTabla;
+          }
+        } else {
+          const puntajeUltimo = ultimoPorTabla.puntosTemporada;
+          
+          const equiposConMismoPuntaje = porTabla.filter(e => 
+            e.puntosTemporada === puntajeUltimo && (!descendidoPorPromedios || e.id !== descendidoPorPromedios.id)
+          );
+
+          if (equiposConMismoPuntaje.length > 1) {
+            hayDefinitorioPorTabla = true;
+            equiposDefinitorioPorTabla = equiposConMismoPuntaje.map(e => e.id);
+            descendidoPorTabla = null;
+          } else if (equiposConMismoPuntaje.length === 1) {
+            descendidoPorTabla = equiposConMismoPuntaje[0];
+          } else if (descendidoPorPromedios) {
+            const tablaSinPrimero = porTabla.filter(e => e.id !== descendidoPorPromedios.id);
+            descendidoPorTabla = tablaSinPrimero[tablaSinPrimero.length - 1];
           }
         }
 
