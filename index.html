@@ -483,6 +483,7 @@
         });
         const porPromedios = [...equiposCalculados].sort((a, b) => b.promedio - a.promedio);
 
+        // ===== CÁLCULO DE DESCENSO POR PROMEDIOS =====
         const ultimoPromedio = porPromedios[porPromedios.length - 1];
         const promedioUltimo = parseFloat(ultimoPromedio.promedio.toFixed(3));
         
@@ -495,65 +496,168 @@
         let equiposEmpatadosPromedios = [];
 
         if (equiposConPromedioMasBajo.length > 1) {
-          hayEmpatePromedios = true;
-          equiposEmpatadosPromedios = equiposConPromedioMasBajo.map(e => e.id);
-          descendidoPorPromedios = null;
+          // Hay empate en promedios
+          // Verificar si TODOS los empatados en promedios tienen el mismo puntaje en tabla
+          const puntajesEnTabla = equiposConPromedioMasBajo.map(e => {
+            const equipoEnTabla = porTabla.find(t => t.id === e.id);
+            return equipoEnTabla?.puntosTemporada;
+          });
+          
+          const todosMismoPuntaje = puntajesEnTabla.every(p => p === puntajesEnTabla[0]);
+          
+          if (todosMismoPuntaje && equiposConPromedioMasBajo.length === 2) {
+            // Solo 2 equipos empatados en promedios con el mismo puntaje en tabla
+            // Verificar si son los únicos con ese puntaje (últimos de la tabla)
+            const puntajeComun = puntajesEnTabla[0];
+            const equiposConEsePuntaje = porTabla.filter(e => e.puntosTemporada === puntajeComun);
+            
+            if (equiposConEsePuntaje.length === 2) {
+              // Son los únicos 2 con ese puntaje -> descienden ambos sin definitorio
+              // Uno por promedios, otro por tabla
+              hayEmpatePromedios = false;
+              equiposEmpatadosPromedios = [];
+              descendidoPorPromedios = equiposConPromedioMasBajo[0];
+              // El otro se manejará en la lógica de tabla
+            } else {
+              // Hay más equipos con ese puntaje -> definitorio
+              hayEmpatePromedios = true;
+              equiposEmpatadosPromedios = equiposConPromedioMasBajo.map(e => e.id);
+              descendidoPorPromedios = null;
+            }
+          } else if (todosMismoPuntaje && equiposConPromedioMasBajo.length > 2) {
+            // Más de 2 equipos empatados en promedios con el mismo puntaje -> definitorio
+            hayEmpatePromedios = true;
+            equiposEmpatadosPromedios = equiposConPromedioMasBajo.map(e => e.id);
+            descendidoPorPromedios = null;
+          } else {
+            // Los empatados en promedios NO tienen todos el mismo puntaje en tabla
+            // El que tiene menos puntos desciende por promedios directamente
+            const empatadosConPuntos = equiposConPromedioMasBajo.map(e => {
+              const equipoEnTabla = porTabla.find(t => t.id === e.id);
+              return { ...e, puntosTemporada: equipoEnTabla?.puntosTemporada };
+            }).sort((a, b) => a.puntosTemporada - b.puntosTemporada);
+            
+            const menorPuntaje = empatadosConPuntos[0].puntosTemporada;
+            const equiposConMenorPuntaje = empatadosConPuntos.filter(e => e.puntosTemporada === menorPuntaje);
+            
+            if (equiposConMenorPuntaje.length > 1) {
+              // Varios tienen el menor puntaje -> definitorio de promedios entre ellos
+              hayEmpatePromedios = true;
+              equiposEmpatadosPromedios = equiposConMenorPuntaje.map(e => e.id);
+              descendidoPorPromedios = null;
+            } else {
+              // Uno solo tiene el menor puntaje
+              descendidoPorPromedios = equiposConMenorPuntaje[0];
+            }
+          }
         } else {
+          // Un solo equipo con el promedio más bajo
           descendidoPorPromedios = ultimoPromedio;
         }
 
-        const ultimoPorTabla = porTabla[porTabla.length - 1];
+        // ===== CÁLCULO DE DESCENSO POR TABLA ANUAL =====
         let descendidoPorTabla = null;
         let hayDefinitorioPorTabla = false;
         let equiposDefinitorioPorTabla = [];
 
-        if (hayEmpatePromedios) {
-          const puntajeUltimo = ultimoPorTabla.puntosTemporada;
-          const equiposConMismoPuntaje = porTabla.filter(e => 
-            e.puntosTemporada === puntajeUltimo
+        const ultimoPorTablaCompleta = porTabla[porTabla.length - 1];
+        
+        // Caso especial: verificar si los 2 últimos en promedios también son los únicos 2 últimos en tabla
+        if (!hayEmpatePromedios && descendidoPorPromedios) {
+          const equiposConPromedioMasBajo = porPromedios.filter(e => 
+            parseFloat(e.promedio.toFixed(3)) === parseFloat(descendidoPorPromedios.promedio.toFixed(3))
           );
-
-          if (equiposConMismoPuntaje.length > 1) {
-            hayDefinitorioPorTabla = true;
-            equiposDefinitorioPorTabla = equiposConMismoPuntaje.map(e => e.id);
-            descendidoPorTabla = null;
-          } else {
-            descendidoPorTabla = ultimoPorTabla;
+          
+          if (equiposConPromedioMasBajo.length === 2) {
+            // Hay 2 empatados en promedios
+            const puntajeDescendidoProm = porTabla.find(e => e.id === descendidoPorPromedios.id)?.puntosTemporada;
+            const otroEmpatadoProm = equiposConPromedioMasBajo.find(e => e.id !== descendidoPorPromedios.id);
+            const puntajeOtroProm = porTabla.find(e => e.id === otroEmpatadoProm.id)?.puntosTemporada;
+            
+            if (puntajeDescendidoProm === puntajeOtroProm) {
+              // Los 2 empatados en promedios tienen el mismo puntaje en tabla
+              const equiposConEsePuntaje = porTabla.filter(e => e.puntosTemporada === puntajeDescendidoProm);
+              
+              if (equiposConEsePuntaje.length === 2) {
+                // Son los únicos 2 con ese puntaje -> el otro desciende por tabla
+                descendidoPorTabla = otroEmpatadoProm;
+              }
+            }
           }
         }
-        else if (descendidoPorPromedios && descendidoPorPromedios.id === ultimoPorTabla.id) {
-          const tablaSinPrimero = porTabla.filter(e => e.id !== descendidoPorPromedios.id);
-          const penultimoPorTabla = tablaSinPrimero[tablaSinPrimero.length - 1];
-          const puntajePenultimo = penultimoPorTabla.puntosTemporada;
-
-          const equiposConMismoPuntaje = tablaSinPrimero.filter(e => 
-            e.puntosTemporada === puntajePenultimo
-          );
-
-          if (equiposConMismoPuntaje.length > 1) {
-            hayDefinitorioPorTabla = true;
-            equiposDefinitorioPorTabla = equiposConMismoPuntaje.map(e => e.id);
-            descendidoPorTabla = null;
-          } else {
-            descendidoPorTabla = penultimoPorTabla;
+        
+        // Si ya encontramos el descendido por tabla en el caso especial, terminamos
+        if (!descendidoPorTabla) {
+          if (!hayEmpatePromedios && descendidoPorPromedios && descendidoPorPromedios.id === ultimoPorTablaCompleta.id) {
+          // El que desciende por promedios también es último en tabla (y NO hay empate en promedios)
+          // Buscamos el penúltimo
+          const tablaSinUltimo = porTabla.slice(0, -1);
+          if (tablaSinUltimo.length > 0) {
+            const penultimoPorTabla = tablaSinUltimo[tablaSinUltimo.length - 1];
+            const puntajePenultimo = penultimoPorTabla.puntosTemporada;
+            
+            const equiposConMismoPuntaje = tablaSinUltimo.filter(e => 
+              e.puntosTemporada === puntajePenultimo
+            );
+            
+            if (equiposConMismoPuntaje.length > 1) {
+              hayDefinitorioPorTabla = true;
+              equiposDefinitorioPorTabla = equiposConMismoPuntaje.map(e => e.id);
+              descendidoPorTabla = null;
+            } else {
+              descendidoPorTabla = penultimoPorTabla;
+            }
           }
         } else {
-          const puntajeUltimo = ultimoPorTabla.puntosTemporada;
+          // Caso normal o cuando hay empate en promedios
+          let tablaParaAnalizar = porTabla;
           
-          const equiposConMismoPuntaje = porTabla.filter(e => 
-            e.puntosTemporada === puntajeUltimo && (!descendidoPorPromedios || e.id !== descendidoPorPromedios.id)
-          );
-
-          if (equiposConMismoPuntaje.length > 1) {
-            hayDefinitorioPorTabla = true;
-            equiposDefinitorioPorTabla = equiposConMismoPuntaje.map(e => e.id);
-            descendidoPorTabla = null;
-          } else if (equiposConMismoPuntaje.length === 1) {
-            descendidoPorTabla = equiposConMismoPuntaje[0];
-          } else if (descendidoPorPromedios) {
-            const tablaSinPrimero = porTabla.filter(e => e.id !== descendidoPorPromedios.id);
-            descendidoPorTabla = tablaSinPrimero[tablaSinPrimero.length - 1];
+          // Si NO hay empate en promedios y hay descendido claro, lo excluimos
+          if (!hayEmpatePromedios && descendidoPorPromedios) {
+            tablaParaAnalizar = porTabla.filter(e => e.id !== descendidoPorPromedios.id);
           }
+          
+          if (tablaParaAnalizar.length > 0) {
+            const ultimoPorTablaFiltrada = tablaParaAnalizar[tablaParaAnalizar.length - 1];
+            const puntajeUltimo = ultimoPorTablaFiltrada.puntosTemporada;
+            
+            // Buscar TODOS los equipos con ese puntaje (incluso los del definitorio de promedios si aplica)
+            let equiposConMismoPuntaje = [];
+            
+            // Agregar equipos de la tabla analizada
+            equiposConMismoPuntaje = porTabla.filter(e => 
+              e.puntosTemporada === puntajeUltimo &&
+              (!hayEmpatePromedios || !equiposEmpatadosPromedios.includes(e.id)) &&
+              (!descendidoPorPromedios || e.id !== descendidoPorPromedios.id)
+            );
+            
+            // Si hay definitorio de promedios, verificar si esos equipos tienen el mismo puntaje
+            if (hayEmpatePromedios) {
+              const empatadosPromediosConMismoPuntaje = equiposEmpatadosPromedios.filter(id => {
+                const equipo = porTabla.find(e => e.id === id);
+                return equipo && equipo.puntosTemporada === puntajeUltimo;
+              });
+              
+              if (empatadosPromediosConMismoPuntaje.length > 0) {
+                // Los del definitorio de promedios TAMBIÉN tienen el mismo puntaje
+                // Entonces el ganador del definitorio de promedios entra al definitorio de tabla
+                equiposConMismoPuntaje = [...equiposConMismoPuntaje, ...empatadosPromediosConMismoPuntaje];
+              }
+            }
+            
+            if (equiposConMismoPuntaje.length > 1) {
+              hayDefinitorioPorTabla = true;
+              equiposDefinitorioPorTabla = equiposConMismoPuntaje.map(e => typeof e === 'string' ? e : e.id);
+              descendidoPorTabla = null;
+            } else if (equiposConMismoPuntaje.length === 1) {
+              descendidoPorTabla = typeof equiposConMismoPuntaje[0] === 'string' 
+                ? porTabla.find(e => e.id === equiposConMismoPuntaje[0])
+                : equiposConMismoPuntaje[0];
+            } else {
+              descendidoPorTabla = ultimoPorTablaFiltrada;
+            }
+          }
+        }
         }
 
         let equiposEmpatados = hayDefinitorioPorTabla ? equiposDefinitorioPorTabla : [];
@@ -749,9 +853,11 @@
       };
 
       const esDescendido = (equipoId) => {
+        // Si hay definitorio por promedios, no marcar como descendido aún
         if (calcularTabla.hayEmpatePromedios && calcularTabla.equiposEmpatadosPromedios.includes(equipoId)) {
           return false;
         }
+        // Si hay definitorio por tabla, no marcar como descendido aún
         if (calcularTabla.hayEmpateTabla && calcularTabla.equiposEmpatadosTabla.includes(equipoId)) {
           return false;
         }
@@ -760,10 +866,13 @@
       };
 
       const tipoDescenso = (equipoId) => {
-        if (calcularTabla.hayEmpatePromedios && calcularTabla.equiposEmpatadosPromedios.includes(equipoId)) {
+        // Si hay empate en tabla, no mostrar tipo aún
+        if (calcularTabla.hayEmpateTabla && calcularTabla.equiposEmpatadosTabla.includes(equipoId)) {
           return null;
         }
-        if (calcularTabla.hayEmpateTabla && calcularTabla.equiposEmpatadosTabla.includes(equipoId)) {
+        
+        // Si hay empate en promedios (definitorio), no mostrar tipo aún
+        if (calcularTabla.hayEmpatePromedios && calcularTabla.equiposEmpatadosPromedios.includes(equipoId)) {
           return null;
         }
         
@@ -777,7 +886,8 @@
       };
 
       const esEmpateDescenso = (equipoId) => {
-        return calcularTabla.equiposEmpatadosTabla.includes(equipoId) || 
+        // Consideramos empate cuando hay definitorio por tabla O por promedios
+        return calcularTabla.equiposEmpatadosTabla.includes(equipoId) ||
                calcularTabla.equiposEmpatadosPromedios.includes(equipoId);
       };
 
@@ -837,10 +947,10 @@
               h('strong', null, '⚠️ Partido Definitorio (Tabla): '),
               `${calcularTabla.equiposEmpatadosTabla.length} equipos empatados en puntos en zona de descenso: ${calcularTabla.equiposEmpatadosTabla.map(id => equiposIniciales.find(e => e.id === id)?.nombre).join(', ')}. Se define por partido definitorio entre ellos.`
             ),
-            calcularTabla.hayEmpatePromedios && h('div', { className: 'regla-descenso bg-orange-50 border-l-4 border-orange-500 p-2 md:p-3 text-sm' },
+            calcularTabla.hayEmpatePromedios && h('div', { className: 'regla-descenso bg-yellow-50 border-l-4 border-yellow-500 p-2 md:p-3 text-sm mb-2 md:mb-3' },
               h('strong', null, '⚠️ Partido Definitorio (Promedios): '),
-              `${calcularTabla.equiposEmpatadosPromedios.length} equipos empatados en promedio en última posición: ${calcularTabla.equiposEmpatadosPromedios.map(id => equiposIniciales.find(e => e.id === id)?.nombre).join(', ')}. Se define por partido definitorio entre ellos.`
-            )
+              `${calcularTabla.equiposEmpatadosPromedios.length} equipos empatados en promedio en última posición: ${calcularTabla.equiposEmpatadosPromedios.map(id => equiposIniciales.find(e => e.id === id)?.nombre).join(', ')}. Jugarán partido definitorio para determinar quién desciende por promedios.`
+            ),
           ),
           h('div', { className: 'grid grid-cols-1 gap-4', id: 'captura-container' },
             h('div', { className: `grid ${esMobile && !mostrarPromedios ? 'grid-cols-1' : 'grid-cols-2 md:grid-cols-2'} gap-1 md:gap-4 ${esMobile && mostrarPromedios ? 'hide-pos-mobile' : ''}` },
