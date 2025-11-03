@@ -264,14 +264,14 @@
           id: 'GIM',
           nombre: 'Gimnasia',
           escudo: 'img/clubes/gimnasia.png',
-          pj: 29,
-          puntos: 29,
-          pjPromedios: 111,
-          puntosPromedios: 122,
+          pj: 30,
+          puntos: 32,
+          pjPromedios: 112,
+          puntosPromedios: 125,
           partidos: [
             { rival: 'Talleres', rivalId: 'TAL', condicion: 'L', fecha: 28, partidoId: 'GIM-TAL-28', jugado: true },
             { rival: 'Estudiantes', rivalId: null, condicion: 'V', fecha: 29, partidoId: 'GIM-EST-29', jugado: true },
-            { rival: 'River', rivalId: null, condicion: 'V', fecha: 30, partidoId: 'GIM-RIV-30' },
+            { rival: 'River', rivalId: null, condicion: 'V', fecha: 30, partidoId: 'GIM-RIV-30', jugado: true },
             { rival: 'Vélez', rivalId: null, condicion: 'L', fecha: 31, partidoId: 'GIM-VEL-31' },
             { rival: 'Platense', rivalId: null, condicion: 'V', fecha: 32, partidoId: 'GIM-PLA-32' }
           ]
@@ -283,7 +283,7 @@
           pj: 29,
           puntos: 31,
           pjPromedios: 111,
-          puntosPromedios: 124,
+          puntosPromedios: 125,
           partidos: [
             { rival: 'Racing', rivalId: null, condicion: 'L', fecha: 28, partidoId: 'BAN-RAC-28', jugado: true },
             { rival: 'Indep. Rivadavia', rivalId: null, condicion: 'V', fecha: 29, partidoId: 'BAN-IRV-29', jugado: true },
@@ -329,14 +329,14 @@
           id: 'GOD',
           nombre: 'Godoy Cruz',
           escudo: 'img/clubes/godoycruz.png',
-          pj: 29,
-          puntos: 27,
-          pjPromedios: 111,
-          puntosPromedios: 154,
+          pj: 30,
+          puntos: 28,
+          pjPromedios: 112,
+          puntosPromedios: 155,
           partidos: [
             { rival: 'Indep. Rivadavia', rivalId: null, condicion: 'V', fecha: 28, partidoId: 'GOD-IRV-28', jugado: true },
             { rival: 'Lanús', rivalId: null, condicion: 'V', fecha: 29, partidoId: 'GOD-LAN-29', jugado: true },
-            { rival: 'San Martín', rivalId: 'SMA', condicion: 'L', fecha: 30, partidoId: 'GOD-SMA-30' },
+            { rival: 'San Martín', rivalId: 'SMA', condicion: 'L', fecha: 30, partidoId: 'GOD-SMA-30', jugado: true },
             { rival: 'Atl. Tucumán', rivalId: 'ATU', condicion: 'V', fecha: 31, partidoId: 'GOD-ATU-31' },
             { rival: 'Riestra', rivalId: null, condicion: 'L', fecha: 32, partidoId: 'GOD-RIE-32' }
           ]
@@ -345,14 +345,14 @@
           id: 'SMA',
           nombre: 'San Martín',
           escudo: 'img/clubes/sanmartin.png',
-          pj: 29,
-          puntos: 26,
-          pjPromedios: 29,
-          puntosPromedios: 26,
+          pj: 30,
+          puntos: 27,
+          pjPromedios: 30,
+          puntosPromedios: 27,
           partidos: [
             { rival: 'San Lorenzo', rivalId: null, condicion: 'V', fecha: 28, partidoId: 'SMA-SLO-28', jugado: true },
             { rival: 'Independiente', rivalId: null, condicion: 'L', fecha: 29, partidoId: 'SMA-IND-29', jugado: true },
-            { rival: 'Godoy Cruz', rivalId: 'GOD', condicion: 'V', fecha: 30, partidoId: 'GOD-SMA-30' },
+            { rival: 'Godoy Cruz', rivalId: 'GOD', condicion: 'V', fecha: 30, partidoId: 'GOD-SMA-30', jugado: true },
             { rival: 'Lanús', rivalId: null, condicion: 'L', fecha: 31, partidoId: 'SMA-LAN-31' },
             { rival: 'Aldosivi', rivalId: 'ALD', condicion: 'V', fecha: 32, partidoId: 'ALD-SMA-32' }
           ]
@@ -429,7 +429,9 @@
         'NEW-UNI-30': 'EXT',
         'ALD-IRV-30': 'ALD',
         'TAL-VEL-30': 'TAL',
-        'IND-ATU-30': 'EXT'
+        'IND-ATU-30': 'EXT',
+        'GIM-RIV-30': 'GIM',
+        'GOD-SMA-30': 'E'
       });
 
       const calcularTabla = useMemo(() => {
@@ -671,10 +673,10 @@
             // Basado en análisis: todos necesitan llegar a 34 puntos excepto casos especiales
             const puntosObjetivoSeguro = {
               'ALD': 27 + 6,      // 33 pts - Necesita ganar todo pero depende de otros
-              'SMA': 26 + 9,      // 35 pts - Necesita superar a Aldosivi en promedio
-              'GOD': 27 + 7,      // 34 pts - Buen promedio, asegura por tabla
+              'SMA': 27 + 6,      // 33 pts - Necesita ganar todo pero depende de otros
+              'GOD': 28 + 6,      // 34 pts - Buen promedio, asegura por tabla
               'TAL': 30 + 4,      // 34 pts - Buen promedio, asegura por tabla
-              'GIM': 29 + 5,      // 34 pts - Mejora promedio suficiente + asegura tabla
+              'GIM': 32 + 2,      // 34 pts - Mejora promedio suficiente + asegura tabla
               'SAR': 30 + 4,      // 34 pts - Supera límite de descenso por ambas vías
               'NEW': 30 + 4,      // 34 pts - Buen promedio + asegura tabla
               'BAN': 31 + 3,      // 34 pts - Ya cerca del objetivo seguro
@@ -987,7 +989,7 @@
                             ),
                             equipo.puntosNecesarios > 0 && h('div', { className: 'flex items-center gap-1' },
                               h('span', { className: 'text-blue-600 font-semibold' }, `Necesita: ${equipo.puntosNecesarios} pts`),
-                              equipo.id === 'ALD' && modoCalculo === 'seguro' && h('span', { className: 'text-orange-600 font-semibold text-[9px]' },
+                              (equipo.id === 'ALD' || equipo.id === 'SMA') && modoCalculo === 'seguro' && h('span', { className: 'text-orange-600 font-semibold text-[9px]' },
                                 '(Dep. otros)'
                               )
                             )
