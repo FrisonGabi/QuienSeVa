@@ -1066,6 +1066,44 @@
                 )
               )
             ),
+            
+            // ========== BANNER MELBET ==========
+            h('div', {
+              className: 'relative rounded-lg shadow-xl overflow-hidden border-4 border-black',
+              style: {
+                backgroundImage: esMobile ? 'url(img/melbet_mobile.jpg)' : 'url(img/melbet.jpg)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                minHeight: '200px'
+              }
+            },
+              h('div', { className: 'absolute inset-0 bg-black bg-opacity-50' }),
+              h('div', { className: 'relative z-10 p-4 md:p-6' },
+                h('div', { className: 'flex flex-col md:flex-row items-center justify-between gap-4' },
+                  h('div', { className: 'flex-1 text-left' },
+                    h('h2', { className: 'text-2xl md:text-3xl font-bold text-white mb-2 drop-shadow-lg' }, 'Aposta en Melbet y jugatela quien desciende'),
+                    h('p', { className: 'text-lg md:text-xl text-white font-semibold drop-shadow-lg' },
+                      'Bono de bienvenida hasta ',
+                      h('strong', { className: 'text-yellow-400 text-2xl md:text-3xl whitespace-nowrap' }, '200 000 ARS')
+                    )
+                  ),
+                  h('div', { className: 'flex flex-col gap-3 items-center' },
+                    h('a', {
+                      href: 'https://refpa3665.com/L?tag=d_4910903m_66329c_&site=4910903&ad=66329',
+                      target: '_blank',
+                      rel: 'noopener noreferrer',
+                      className: 'bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-3 px-8 rounded-lg text-lg md:text-xl transition-all transform hover:scale-105 shadow-lg border-2 border-black'
+                    }, 'REGISTRARSE AHORA'),
+                    h('div', { className: 'bg-black bg-opacity-80 rounded-lg px-4 py-2 backdrop-blur-sm' },
+                      h('p', { className: 'text-xs md:text-sm text-yellow-400 mb-1 text-center font-semibold' }, 'O usando el codigo promocional:'),
+                      h('p', { className: 'text-xl md:text-2xl font-bold text-yellow-400 tracking-wider font-mono text-center' }, 'ml_1775751')
+                    )
+                  )
+                )
+              )
+            ),
+            // ========== FIN BANNER MELBET ==========
+
             h('div', { className: 'bg-white rounded-lg shadow-xl p-2 md:p-4' },
               h('h2', { className: 'titulo-tabla text-xl font-bold mb-2 md:mb-3 text-gray-800' }, 'Simulación de Resultados'),
               h('div', { className: 'grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-3' },
