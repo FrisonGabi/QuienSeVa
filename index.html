@@ -901,7 +901,7 @@
         h('div', { className: 'max-w-7xl mx-auto' },
           h('div', { className: 'bg-white rounded-lg shadow-2xl p-3 md:p-6 mb-4 md:mb-6' },
             h('div', { className: 'flex items-center justify-between mb-3 md:mb-4' },
-              h('div', { className: 'flex items-center gap-2 md:gap-3' },
+              h('div', { className: 'flex flex-col gap-1 items-start' },
                 h('img', {
                   src: 'img/favicon.png',
                   alt: '¿Quién Se Va?',
@@ -912,7 +912,10 @@
                   target: '_blank',
                   rel: 'noopener noreferrer',
                   className: 'flex items-center gap-1 text-xs md:text-sm text-slate-950 hover:text-blue-600 transition-colors font-semibold'
-                })
+                },
+                  h(XIcon, { size: 16, className: 'w-4 h-4' }),
+                  h('span', null, '@zorritofassi')
+                )
               ),
               h('div', { className: 'flex flex-col md:flex-row gap-2' },
                 esMobile && h('button', {
