@@ -277,22 +277,22 @@
             { rival: 'Platense', rivalId: null, condicion: 'V', fecha: 32, partidoId: 'GIM-PLA-32' }
           ]
         },
-        {
-          id: 'BAN',
-          nombre: 'Banfield',
-          escudo: 'img/clubes/banfield.png',
-          pj: 29,
-          puntos: 31,
-          pjPromedios: 111,
-          puntosPromedios: 125,
-          partidos: [
-            { rival: 'Racing', rivalId: null, condicion: 'L', fecha: 28, partidoId: 'BAN-RAC-28', jugado: true },
-            { rival: 'Indep. Rivadavia', rivalId: null, condicion: 'V', fecha: 29, partidoId: 'BAN-IRV-29', jugado: true },
-            { rival: 'Lanús', rivalId: null, condicion: 'L', fecha: 30, partidoId: 'BAN-LAN-30' },
-            { rival: 'Aldosivi', rivalId: 'ALD', condicion: 'L', fecha: 31, partidoId: 'BAN-ALD-31' },
-            { rival: 'Central Córdoba', rivalId: null, condicion: 'V', fecha: 32, partidoId: 'BAN-CCO-32' }
-          ]
-        },
+        // {
+        //   id: 'BAN',
+        //   nombre: 'Banfield',
+        //   escudo: 'img/clubes/banfield.png',
+        //   pj: 30,
+        //   puntos: 34,
+        //   pjPromedios: 112,
+        //   puntosPromedios: 128,
+        //   partidos: [
+        //     { rival: 'Racing', rivalId: null, condicion: 'L', fecha: 28, partidoId: 'BAN-RAC-28', jugado: true },
+        //     { rival: 'Indep. Rivadavia', rivalId: null, condicion: 'V', fecha: 29, partidoId: 'BAN-IRV-29', jugado: true },
+        //     { rival: 'Lanús', rivalId: null, condicion: 'L', fecha: 30, partidoId: 'BAN-LAN-30', jugado: true, oculto: true },
+        //     { rival: 'Aldosivi', rivalId: 'ALD', condicion: 'L', fecha: 31, partidoId: 'BAN-ALD-31' },
+        //     { rival: 'Central Córdoba', rivalId: null, condicion: 'V', fecha: 32, partidoId: 'BAN-CCO-32' }
+        //   ]
+        // },
         {
           id: 'SAR',
           nombre: 'Sarmiento',
@@ -433,7 +433,8 @@
         'IND-ATU-30': 'EXT',
         'GIM-RIV-30': 'GIM',
         'GOD-SMA-30': 'E',
-        'SAR-PLA-30': 'E'
+        'SAR-PLA-30': 'E',
+        'BAN-LAN-30': 'BAN'
       });
 
       const calcularTabla = useMemo(() => {
@@ -681,7 +682,6 @@
               'GIM': 32 + 2,      // 34 pts - Mejora promedio suficiente + asegura tabla
               'SAR': 30 + 4,      // 34 pts - Supera límite de descenso por ambas vías
               'NEW': 30 + 4,      // 34 pts - Buen promedio + asegura tabla
-              'BAN': 31 + 3,      // 34 pts - Ya cerca del objetivo seguro
               'ATU': 31 + 3       // 34 pts - Buen promedio, asegura salvación
             };
 
@@ -754,7 +754,8 @@
           'IND-ATU-30': 'EXT',
           'GIM-RIV-30': 'GIM',
           'GOD-SMA-30': 'E',
-          'SAR-PLA-30': 'E'
+          'SAR-PLA-30': 'E',
+          'BAN-LAN-30': 'BAN'
         });
       };
 
@@ -951,7 +952,7 @@
                 h('strong', null, modoCalculo === 'seguro' ? 'Modo Seguro: ' : 'Modo Aproximado: '),
                 modoCalculo === 'seguro'
                   ? 'Puntos necesarios para salvarse sin depender de nadie (considerando peor escenario posible).'
-                  : 'Puntos aproximados basados en objetivo histórico (~34 puntos).'
+                  : 'Puntos aproximados basados en objetivo histórico (~31 puntos).'
               )
             ),
             calcularTabla.hayEmpateTabla && h('div', { className: 'regla-descenso bg-orange-50 border-l-4 border-orange-500 p-2 md:p-3 text-sm mb-2 md:mb-3' },
@@ -1123,7 +1124,7 @@
                       h('h3', { className: 'equipo-titulo font-bold text-base text-gray-800' }, equipo.nombre)
                     ),
                     h('div', { className: 'space-y-1 md:space-y-1.5' },
-                      equipo.partidos.map((partido, idx) => {
+                      equipo.partidos.filter(p => !p.oculto).map((partido, idx) => {
                         const esLocal = partido.condicion === 'L';
                         const resultadoPartido = resultados[partido.partidoId];
                         const equipoGano = resultadoPartido === equipo.id;
