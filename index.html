@@ -251,6 +251,7 @@
       const [modoCalculo, setModoCalculo] = React.useState('seguro');
       const [mostrarPromedios, setMostrarPromedios] = React.useState(false);
       const [esMobile, setEsMobile] = React.useState(window.innerWidth <= 768);
+      const [fechaVisualizacion, setFechaVisualizacion] = React.useState(null); // null = calcular automáticamente
 
       React.useEffect(() => {
         const handleResize = () => {
@@ -302,7 +303,6 @@
           pjPromedios: 111,
           puntosPromedios: 112,
           partidos: [
-            { rival: 'Rosario Central', rivalId: null, condicion: 'V', fecha: 23, partidoId: 'SAR-RCE-27', jugado: true },
             { rival: 'River', rivalId: null, condicion: 'V', fecha: 28, partidoId: 'SAR-RIV-28', jugado: true },
             { rival: 'Vélez', rivalId: null, condicion: 'L', fecha: 29, partidoId: 'SAR-VEL-29', jugado: true },
             { rival: 'Platense', rivalId: null, condicion: 'V', fecha: 30, partidoId: 'SAR-PLA-30', jugado: true },
@@ -392,7 +392,7 @@
         },
         {
           id: 'ATU',
-          nombre: 'Atlético Tucumán',
+          nombre: 'Atl Tucumán',
           escudo: 'img/clubes/atleticotucuman.png',
           pj: 30,
           puntos: 31,
@@ -437,8 +437,72 @@
         'BAN-LAN-30': 'BAN'
       });
 
+      // Efecto para resetear la visualización cuando cambia la última fecha jugada
+      const ultimaFechaJugadaRef = React.useRef(null);
+      React.useEffect(() => {
+        // Calcular la última fecha jugada actual
+        const partidosPorFecha = {};
+        equiposIniciales.forEach(equipo => {
+          equipo.partidos.forEach(partido => {
+            if (!partidosPorFecha[partido.fecha]) {
+              partidosPorFecha[partido.fecha] = { total: 0, jugados: 0 };
+            }
+            partidosPorFecha[partido.fecha].total += 1;
+            if (partido.jugado === true) {
+              partidosPorFecha[partido.fecha].jugados += 1;
+            }
+          });
+        });
+
+        const fechasOrdenadas = Object.keys(partidosPorFecha).map(Number).sort((a, b) => a - b);
+        let ultimaCompleta = 27;
+        for (const fecha of fechasOrdenadas) {
+          if (partidosPorFecha[fecha].jugados === partidosPorFecha[fecha].total) {
+            ultimaCompleta = fecha;
+          } else {
+            break;
+          }
+        }
+
+        // Si la última fecha jugada cambió (se completó una nueva fecha), resetear la visualización
+        if (ultimaFechaJugadaRef.current !== null && ultimaFechaJugadaRef.current !== ultimaCompleta) {
+          setFechaVisualizacion(null);
+        }
+        ultimaFechaJugadaRef.current = ultimaCompleta;
+      }, [equiposIniciales]);
+
       const calcularTabla = useMemo(() => {
+        // Calcular la última fecha completamente jugada para este cálculo
+        const partidosPorFecha = {};
+        equiposIniciales.forEach(equipo => {
+          equipo.partidos.forEach(partido => {
+            if (!partidosPorFecha[partido.fecha]) {
+              partidosPorFecha[partido.fecha] = { total: 0, jugados: 0 };
+            }
+            partidosPorFecha[partido.fecha].total += 1;
+            if (partido.jugado === true) {
+              partidosPorFecha[partido.fecha].jugados += 1;
+            }
+          });
+        });
+
+        const fechasOrdenadas = Object.keys(partidosPorFecha).map(Number).sort((a, b) => a - b);
+        let ultimaJugadaCalculo = 27;
+        for (const fecha of fechasOrdenadas) {
+          if (partidosPorFecha[fecha].jugados === partidosPorFecha[fecha].total) {
+            ultimaJugadaCalculo = fecha;
+          } else {
+            break;
+          }
+        }
+
+        // Si estamos en la fecha actual (última jugada), incluir todas las simulaciones
+        // Si estamos en fechas históricas, solo mostrar hasta esa fecha
+        const esVistaHistorica = fechaVisualizacion !== null && fechaVisualizacion < ultimaJugadaCalculo;
+        const fechaLimite = esVistaHistorica ? fechaVisualizacion : 999;
+
         const equiposCalculados = equiposIniciales.map(equipo => {
+          // Empezar con valores base (que incluyen resultados hasta fecha 30)
           let puntosTemporada = equipo.puntos;
           let pjTemporada = equipo.pj;
           let puntosPromediosTotales = equipo.puntosPromedios;
@@ -449,19 +513,47 @@
             const resultado = resultados[partido.partidoId];
             const esPartidoJugado = partido.jugado === true;
 
-            if (resultado && !esPartidoJugado) {
-              pjTemporada += 1;
-              pjPromediosTotales += 1;
+            if (esPartidoJugado) {
+              // Si el partido jugado es de una fecha POSTERIOR a la que estamos viendo,
+              // debemos RESTAR sus puntos (porque los valores base ya los incluyen)
+              if (partido.fecha > fechaLimite) {
+                const resultadoReal = resultados[partido.partidoId];
 
-              if (resultado === equipo.id) {
-                puntosTemporada += 3;
-                puntosPromediosTotales += 3;
-              } else if (resultado === 'E') {
-                puntosTemporada += 1;
-                puntosPromediosTotales += 1;
+                pjTemporada -= 1;
+                pjPromediosTotales -= 1;
+
+                if (resultadoReal === equipo.id) {
+                  puntosTemporada -= 3;
+                  puntosPromediosTotales -= 3;
+                } else if (resultadoReal === 'E') {
+                  puntosTemporada -= 1;
+                  puntosPromediosTotales -= 1;
+                }
               }
-            } else if (!resultado && !esPartidoJugado) {
-              partidosRestantes += 1;
+            } else {
+              // Partido no jugado (simulado)
+              // En vista histórica: solo considerar si está dentro de la fecha límite
+              // En vista actual (fecha 30): considerar todas las simulaciones
+              const debeConsiderarSimulacion = !esVistaHistorica || partido.fecha <= fechaLimite;
+
+              if (debeConsiderarSimulacion) {
+                if (resultado) {
+                  pjTemporada += 1;
+                  pjPromediosTotales += 1;
+
+                  if (resultado === equipo.id) {
+                    puntosTemporada += 3;
+                    puntosPromediosTotales += 3;
+                  } else if (resultado === 'E') {
+                    puntosTemporada += 1;
+                    puntosPromediosTotales += 1;
+                  }
+                } else {
+                  partidosRestantes += 1;
+                }
+              } else {
+                partidosRestantes += 1;
+              }
             }
           });
 
@@ -710,7 +802,7 @@
           hayEmpatePromedios: hayEmpatePromedios,
           equiposEmpatadosPromedios: equiposEmpatadosPromedios
         };
-      }, [resultados, modoCalculo]);
+      }, [resultados, modoCalculo, fechaVisualizacion]);
 
       const handleResultado = (partidoId, ganadorId, esLocal, esEmpate = false) => {
         setResultados(prev => {
@@ -904,6 +996,75 @@
         return calcularTabla.equiposEmpatadosPromedios.includes(equipoId);
       };
 
+      // Calcular dinámicamente la última fecha completamente jugada
+      const ultimaFechaJugada = React.useMemo(() => {
+        // Agrupar partidos por fecha
+        const partidosPorFecha = {};
+
+        equiposIniciales.forEach(equipo => {
+          equipo.partidos.forEach(partido => {
+            if (!partidosPorFecha[partido.fecha]) {
+              partidosPorFecha[partido.fecha] = {
+                total: 0,
+                jugados: 0
+              };
+            }
+            partidosPorFecha[partido.fecha].total += 1;
+            if (partido.jugado === true) {
+              partidosPorFecha[partido.fecha].jugados += 1;
+            }
+          });
+        });
+
+        // Encontrar la última fecha donde TODOS los partidos están jugados
+        const fechasOrdenadas = Object.keys(partidosPorFecha)
+          .map(Number)
+          .sort((a, b) => a - b);
+
+        let ultimaCompleta = 27; // Por defecto, antes de cualquier fecha
+
+        for (const fecha of fechasOrdenadas) {
+          const info = partidosPorFecha[fecha];
+          // Una fecha está completa si todos sus partidos están jugados
+          if (info.jugados === info.total) {
+            ultimaCompleta = fecha;
+          } else {
+            // Si encontramos una fecha incompleta, paramos
+            break;
+          }
+        }
+
+        return ultimaCompleta;
+      }, [equiposIniciales]);
+
+      // Obtener todas las fechas únicas de los partidos + fecha 27 (inicial)
+      const fechasDisponibles = React.useMemo(() => {
+        const fechas = new Set([27]); // Agregar fecha 27 como punto de partida
+        equiposIniciales.forEach(equipo => {
+          equipo.partidos.forEach(partido => {
+            // Solo agregar fechas hasta la última fecha jugada
+            if (partido.fecha <= ultimaFechaJugada) {
+              fechas.add(partido.fecha);
+            }
+          });
+        });
+        return Array.from(fechas).sort((a, b) => a - b);
+      }, [ultimaFechaJugada]);
+
+      const fechaActual = fechaVisualizacion !== null ? fechaVisualizacion : ultimaFechaJugada;
+      const indiceFechaActual = fechasDisponibles.indexOf(fechaActual);
+
+      const navegarFecha = (direccion) => {
+        const nuevoIndice = indiceFechaActual + direccion;
+        if (nuevoIndice >= 0 && nuevoIndice < fechasDisponibles.length) {
+          setFechaVisualizacion(fechasDisponibles[nuevoIndice]);
+        }
+      };
+
+      const irAFechaActual = () => {
+        setFechaVisualizacion(ultimaFechaJugada);
+      };
+
       return h('div', { className: 'min-h-screen bg-slate-950 p-4' },
         h('div', { className: 'max-w-7xl mx-auto' },
           h('div', { className: 'bg-white rounded-lg shadow-2xl p-3 md:p-6 mb-4 md:mb-6' },
@@ -967,7 +1128,29 @@
           h('div', { className: 'grid grid-cols-1 gap-4', id: 'captura-container' },
             h('div', { className: `grid ${esMobile && !mostrarPromedios ? 'grid-cols-1' : 'grid-cols-2 md:grid-cols-2'} gap-1 md:gap-4 ${esMobile && mostrarPromedios ? 'hide-pos-mobile' : ''}` },
               h('div', { className: 'bg-white rounded-lg shadow-xl p-2 md:p-4' },
-                h('h2', { className: 'titulo-tabla text-xl font-bold mb-2 md:mb-3 text-gray-800' }, 'Tabla Anual'),
+                // Mostrar controles de navegación solo si NO estamos en mobile con promedios visibles
+                (esMobile && mostrarPromedios)
+                  ? h('h2', { className: 'titulo-tabla text-xl font-bold mb-2 md:mb-3 text-gray-800' }, 'Tabla Anual')
+                  : h('div', { className: 'flex items-center justify-between mb-2 md:mb-3' },
+                      h('h2', { className: 'titulo-tabla text-xl font-bold text-gray-800' }, 'Tabla Anual'),
+                      h('div', { className: 'flex items-center gap-2' },
+                        h('button', {
+                          onClick: () => navegarFecha(-1),
+                          disabled: indiceFechaActual === 0,
+                          className: `p-1 rounded ${indiceFechaActual === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-blue-600 hover:bg-blue-50 cursor-pointer'}`
+                        }, '◀'),
+                        h('span', { className: 'text-sm font-semibold text-gray-600' }, `Fecha ${fechaActual} Finalizada`),
+                        h('button', {
+                          onClick: () => navegarFecha(1),
+                          disabled: indiceFechaActual === fechasDisponibles.length - 1,
+                          className: `p-1 rounded ${indiceFechaActual === fechasDisponibles.length - 1 ? 'text-gray-300 cursor-not-allowed' : 'text-blue-600 hover:bg-blue-50 cursor-pointer'}`
+                        }, '▶'),
+                        !esMobile && fechaActual !== ultimaFechaJugada && h('button', {
+                          onClick: irAFechaActual,
+                          className: 'ml-2 text-xs px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700'
+                        }, 'Actual')
+                      )
+                    ),
                 h('div', { className: 'space-y-1 md:space-y-1.5' },
                   calcularTabla.equipos.map((equipo, idx) => {
                     const descendido = esDescendido(equipo.id);
